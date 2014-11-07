@@ -1,0 +1,21 @@
+define([
+	"../libs/jquery/jquery-1.8.3.min",
+    "utils",
+    "base64",
+    "foundation",
+    "ifrMessenger",
+    "configure",
+    "utils",
+    "domainCtrl",
+    "ajaxfileupload",
+	"function",
+    "ebcm",
+    "eblc",
+    "ebum",
+    "global",
+    "EventHandle",
+    "processor_function",
+    "processor",
+    "api"
+	], function() {
+    });

@@ -1,0 +1,23 @@
+{
+  "name": "jqEBMessenger",
+  "title": "entboost messenger jquery plugin",
+  "description": "The best jQuery plugin ever.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Administrator/jqEBMessenger",
+  "author": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Administrator/jqEBMessenger.git"
+  },
+  "bugs": "https://github.com/Administrator/jqEBMessenger/issues",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Administrator/jqEBMessenger/blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "1.8"
+  },
+  "keywords": []
+}

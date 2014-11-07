@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<style type="text/css">
+html {overflow-y:scroll;}
+body {
+    margin: 0;
+    padding: 0;
+    width: 98%;
+    _width: 97%;
+    height: 100%;
+    cursor: text;
+    /*background-color: #F4F4F4;*/
+    font-size: 14px;
+    font-family: "微软雅黑"; /*Courier,serif,monospace;*/
+    /*border: 2px solid #EDECEC;
+    border-radius: 2px;*/
+}
+
+/* ###### 每行记录 ###### */
+.revMsg_box {
+	border: 0px solid #000;
+}
+
+/* ###### 消息内容 ###### */
+.revMsg_box div.msg {
+	margin-left: 0;
+	margin-right: 0;
+	padding: 5px 10px 5px 10px;
+	_width: 60%;
+	max-width: 68%;
+/*	min-height: 30px !important;
+	_height: 44px;*/
+	border: 1px solid #E5E7E6;
+	border-radius: 7px;
+	display: inline-block;
+	zoom: 1; 
+    *display: inline;
+    vertical-align:top;
+    background-color: #fff;
+}
+.revMsg_box div.msg_r {
+	margin-top: 16px;
+	margin-bottom: 4px;
+	float: right;
+}
+.revMsg_box div.msg_l {
+	margin-top: 4px;
+	margin-bottom: 16px;
+	float: left;
+}
+/* ###### 消息内容中的日期时间 ###### */
+.revMsg_box div.msg div.content {
+	width:100%;
+	min-height: 20px;
+	_height: 20px;
+	word-break: break-all;
+}
+.revMsg_box div.msg div.content img {
+	display: inline-block;
+	zoom: 1; 
+    *display: inline;
+}
+/* ###### 消息内容中的日期时间 ###### */
+.revMsg_box div.msg div.date_time {
+	width:100%;
+	text-align:right;
+	height:16px;
+	color: #D8D6D6;
+}
+
+/* ###### 头像 ###### */
+.revMsg_box div.head_img {
+	width: 60px;
+	height: 60px;
+	display: inline-block;
+	zoom: 1; 
+    *display: inline;
+    vertical-align:top;
+}
+.revMsg_box div.img_r {
+	float: right;
+	margin-top:5px;
+	margin-right: 10px;
+}
+.revMsg_box div.img_l {
+	float: left;
+	margin-top:15px;
+	margin-left: 10px;
+}
+
+/* ###### 泡泡尾巴 ###### */
+.revMsg_box div.talk_tail {
+	position:relative;
+	margin-top:10px;
+	width:40px;
+	display: inline-block;
+	zoom: 1; 
+    *display: inline;
+    vertical-align:top;
+}
+.revMsg_box div.tail_r {
+	float: right;
+	left: -1px;
+}
+.revMsg_box div.tail_l {
+	float: left;
+	right: -1px;
+	/*_right: -4px;*/
+	/*border: 1px solid #000;*/
+}
+.revMsg_box div.tail_l img {
+	float: right;
+}
+
+.revMsg_box div.sys_tips {
+	/*
+	display: inline-block;
+	zoom: 1;
+    *display: inline;
+    vertical-align:top;*/
+    zoom: 1;
+    border: 0px solid red;
+}
+.revMsg_box div.sys_tips div{
+	margin: 10px;
+	padding: 5px 10px;
+	min-height: 40px !important;
+	_height: 54px;
+	border: 1px solid #D3CFD0;
+	border-radius: 7px;
+	background-color: #C6EFF4;
+	color: black;
+	font-size: 14px;
+	/*font-weight: bold;*/
+}
+
+/*
+.revMsg_box div.attachment {
+    zoom: 1;
+    border: 0px solid red;
+}
+.revMsg_box div.attachment div{
+	margin: 10px;
+	padding: 5px 10px;
+	min-height: 40px !important;
+	_height: 54px;
+	border: 1px solid #D3CFD0;
+	border-radius: 7px;
+	background-color: #C6EFF4;
+	color: black;
+	font-size: 14px;
+}
+*/
+/*
+.msg {
+	margin-left: 1em;
+}*/
+
+p {
+	margin: 0;
+	padding: 0;
+}
+.me {
+	color: blue;
+}
+.you {
+	color: green;
+}
+</style>
+
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript">
+/**
+ * img图片标签按比例适应大小调整
+ * @param obj img图片标签对象
+ * @param targetWidth 调整后目标宽度
+ * @param targetHeight 调整后目标高度
+ */
+function adjustImgSize(obj, targetWidth, targetHeight) {
+	var pw = obj.width;
+	var ph = obj.height;
+	if(pw >targetWidth || ph >targetHeight) {
+		if( (targetWidth/targetHeight)>(pw/ph)) {
+			obj.style.width = "auto";
+			obj.style.height = targetHeight+"px";
+		}
+		if( (targetWidth/targetHeight)<(pw/ph)) {
+			obj.style.width = targetWidth + "px";
+			obj.style.height= "auto";
+		}
+	}
+}
+/**
+ * 更新滚动条状态
+ */
+function updateScroll() {
+	$(document).scrollTop($(document).height());
+}
+
+/**
+ * 已下线后，重新logon
+ * @param a_element 被点击的<a>标签对象
+ */
+function reloadLogon(a_element) {
+	$(a_element).remove();
+    parent.$.jqEBMessenger.UI.recall_flag =true;
+	parent.$.jqEBMessenger.UI.logon();
+}
+
+/**
+ * 已结束的会话重新对话，重新载入会话
+ * @param a_element 被点击的<a>标签对象
+ */
+function reloadChat(a_element, callId) {
+    $(a_element).remove();
+    parent.$.jqEBMessenger.UI.recall_flag =true;
+    parent.$.jqEBMessenger.UI.callAccountsOfChat(callId);
+}
+
+$(document).ready(function() {
+	//页面加载时绑定点击事件，单击取消闪烁提示  
+    $(document).bind("click", function(){
+    	parent.$.CancelFlashTip();
+    });
+});
+ 
+</script>
+</head>
+<body></body>
+</html>
