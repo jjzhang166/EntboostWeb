@@ -3,6 +3,8 @@
 * [恩布互联技术论坛](http://forum.entboost.com/forum.php)
 * [企业IM私有云下载](http://doc.entboost.com/index.php/Downloads)
 
+* 本应用基于恩布互联平台Rest API实施
+
 版本更新
 ----------
 20141107版
