@@ -31,8 +31,8 @@
 	* 修改webim地址，var webimUrl=xxx，例如 var webimUrl="http://webim.entboost.com"
 	浮动窗中电话号码 "0755-27362216"修改为用户公司的电话号码
 	
-	* 用户在自己的网站页面最后增加以下代码,xxx是900客服号码
-	 <script type="text/javascript" src="http://webimUrl/js/onlinecall.js?to_account=xxx" charset="UTF-8"></script>
+	* 用户在自己的网站页面最后增加以下代码<script type="text/javascript" src="http://webimUrl/js/onlinecall.js?to_account=xxx" charset="UTF-8"></script>,xxx是900客服号码
+	 
 	
 	
 	
