@@ -23,12 +23,12 @@
 * 修改webim/client.html中的相关内容
 	* 修改主服务器LC地址，$.ebMsg.options.DOMAIN_URL="xxx";，例如 `$.ebMsg.options.DOMAIN_URL="entboost.entboost.com"`;
 	
-	* 修改webim地址，$.ebMsg.options.WEBIM_URL = "xxx";， 例如`$.ebMsg.options.WEBIM_URL="http://webim.entboost.com"`;
+	* 修改webim地址，$.ebMsg.options.WEBIM_URL = "xxx";， 例如`$.ebMsg.options.WEBIM_URL="http://entboost.entboost.com/webim"`;
 	
 	* 修改默认客服号码，$.ebMsg.options.CUS_ACCOUNT = "xxx";，例如`$.ebMsg.options.CUS_ACCOUNT="9009301111"`;
 
 * 修改webim/onlinecall.js文件中的相关内容
-	* 修改webim地址，var webimUrl=xxx，例如 `var webimUrl="http://webim.entboost.com"`
+	* 修改webim地址，var webimUrl=xxx，例如 `var webimUrl="http://entboost.entboost.com/webim"`
 	浮动窗中电话号码 `"0755-27362216"`修改为用户公司的电话号码
 	
 	* 用户在自己的网站页面最后增加以下代码,xxx是900客服号码
