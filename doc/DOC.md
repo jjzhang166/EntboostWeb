@@ -17,7 +17,7 @@
 		* jquery.jqEBMessenger.js [通讯层js文件(sdk)]
 		* onlinecall.js[在线客服js文件]
 	* libs [第三方库文件夹]
-	* client.html [入口文件夹]
+	* client.html [入口文件]
 
 ###部署方式
 * 修改webim/client.html中的相关内容
