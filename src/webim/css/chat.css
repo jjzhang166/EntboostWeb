@@ -1,0 +1,412 @@
+/**
+ * function: im web chat css
+ * author: hoojo
+ * createDate: 2012-5-26 上午11:42:10
+ */
+@CHARSET "UTF-8";
+
+* {
+    font-family: "微软雅黑";/*Courier,serif,monospace;*/
+    font-size: 14px;
+}
+
+body {
+	text-align:center;
+	background-color: #EFF5FB;
+}
+
+#loading_img {
+	width: 128px;
+	height: 576px;
+	margin:auto;
+	z-index: 0;
+	background: transparent url("../images2/big-loading.gif") no-repeat scroll center center;
+}
+
+#loading_message {
+	width: 300px;
+	height: 500px;
+	color: blue;
+	font-weight: bold;
+	font-size: 24px;
+	padding-top: 180px;
+	margin:auto;
+	z-index: 0;
+}
+
+.chat-main {
+	width: 800px;
+    margin:auto;
+    z-index: 999;
+    display: none;
+    border: 0px solid red;
+}
+
+#chat {
+    width: 100%;
+    height: 555px;	
+	position: relative;
+    padding: 0;
+    margin: 0;
+    border: 0px solid #000;
+}
+
+.chat-main .radius {
+	position: absolute;
+	left:0;
+	width: 100%;
+    background-color: white;
+    border: 8px solid #EFF5FB;
+    /*border: 8px solid green;*/
+    /*border-radius: 4px;*/
+    /*display: none;*/
+}
+
+#chat table {
+    border-collapse: collapse;
+    width: 100%;
+    /*width: 435px;*/
+    /**width: 460px;*/
+    /*width: 410px;*/
+    /*width: 320px;*/
+}
+
+#chat table .title {
+    font-weight: bold;
+    color: #4297da;
+    padding: 3px;
+    /*background-color: #94CADF;*/
+    background-color: #EFF5FB;
+}
+
+/* 收缩条 */
+#chat table .split {
+	/*border-left: 1px solid #D4D4D4;*/
+}
+#chat table .split-r {
+	width: 11px;
+    background: url(../images2/round_arrow_right.png) no-repeat 50% 50%;
+    cursor: pointer;
+    background-color: #EFF5FB;
+}
+#chat table .split-l {
+	width: 11px;
+    background: url(../images2/round_arrow_left.png) no-repeat 50% 50%;
+    cursor: pointer;
+    background-color: #EFF5FB;
+}
+ 
+/* ################## product info #################### */
+#chat table .product-info {
+    width: 30%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    vertical-align: top;
+    background-color: #EFF5FB;
+}
+
+#chat table .product-info .logo {
+    width: 100%;
+    height: 30%;
+    border: 0px solid #000;
+    display: inline-block;
+	zoom: 1;
+    *display: inline;
+}
+#chat table .product-info .logo img {
+    width: 60%;
+    cursor: pointer;
+}
+
+#chat table .product-info .product-name {
+    width: 100%;
+    border: 0px solid #000;
+    display: inline-block;
+	zoom: 1;
+    *display: inline;
+}
+#chat table .product-info .product-name div{
+	margin: 0 auto;
+    width: 90%;
+    border: 0px solid #000;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0075BF;
+    /*
+    text-shadow: 2px 3px 5px #ffffff;
+    filter: DropShadow(Color=#ffffff, OffX=2, OffY=3, Positive=5)*/
+}
+
+#chat table .product-info .product-description {
+    width: 100%;
+    height: 60%;
+    display: inline-block;
+	zoom: 1;
+    *display: inline;
+    border: 0px solid #000;
+}
+#chat table .product-info .product-description div {
+	/*background-color: #EFF5FB;*/
+	/*border: 1px solid #D5D4D2;*/
+	margin: 10px 10px;
+	height: 70%;
+	_height: 200px;
+}
+#chat table .product-info .product-description span {
+	padding: 10px 10px;
+	text-align: left;
+	display: inline-block;
+	zoom: 1;
+    *display: inline;
+    color: #5079AA;
+    font-size: 12px;
+    font-weight: lighter;
+    line-height: 20px;
+}
+
+/*########### 接收消息区域 ############ */
+#chat table .receive-message {
+    height: 350px;
+}
+
+#chat table .receive-message iframe{
+	border: 1px solid #D1D1D1;
+}
+
+#chat table .send-message {
+    width: 100%;
+}
+#chat table .send-message iframe{
+    border: 1px solid #D1D1D1;
+}
+
+#chat table td {
+    padding: 0;
+}
+
+#chat table .bottom-bar {
+    /*background-color: #94CADF;*/
+    background-color: #EFF5FB;
+    text-align: center;
+    margin: 0 5px 5px 5px;
+}
+
+#chat table .bottom-bar a {
+	color:#FFF;
+	text-decoration:none;
+	font-size:14px;
+	font-weight:600;
+	line-height:22px;
+}
+
+#chat table .bottom-bar a:hover {
+	color:#000;
+}
+
+/* ############## 工具条 ################# start */
+#chat table .tool-bar {
+    height: 25px;
+    /*background-color: #94CADF;*/
+    background-color: #EFF5FB;
+    
+}
+
+#chat table .tool-bar select {
+    float: left;
+}
+
+#chat table .tool-bar select.family {
+    width: 45px;
+    *width: 55px;
+}
+
+#chat table .tool-bar div {
+    width: 17px;
+    height: 16px;
+    float: left;
+    cursor: pointer;
+    margin-right: 2px;
+    margin-top: 1px;
+    *margin-top: 2px;
+    background: transparent url("../images/tb-sprite.gif") no-repeat scroll 0 0;
+}
+
+#chat table .tool-bar .color {
+    margin-left: 2px;
+    background-position: -159px 0;
+}
+
+#chat table .tool-bar .bold {
+    /*background-position: 0 0;*/
+}
+
+#chat table .tool-bar .italic {
+    background-position: -18px 0;
+}
+
+#chat table .tool-bar .underline {
+    background-position: -32px 0;
+}
+
+#chat table .tool-bar .face {
+    background-image: url("../images/facehappy.gif");
+}
+
+#chat table .tool-bar .attachment {
+	background-position: -208px 0;
+}
+
+#chat table .tool-bar .history {
+    background-image: none;
+    width: 60px;
+    float: right;
+    margin-top: 3px;
+    font-size: 14px;
+    display: none;
+}
+
+/* ###### 表情 ###### */
+#chat #face {
+	position: absolute;
+    border: 1px solid #E5E5E5;
+    background-color: #fff;
+    width: 430px;
+    *width: 430px;
+    height: 232px;
+    left: 8px;
+    bottom: 190px;
+    z-index: 1050;
+    overflow-y:auto;
+    text-align: left;
+    display: none;
+}
+
+#chat #face img {
+	width: 32px;
+	height: 32px;
+    border: 1px solid #ccc;
+    border-right: none;
+    border-bottom: none; 
+    cursor: pointer;
+}
+
+/* ###### 发送文件附件 ###### */
+#chat #attachment {
+	position: absolute;
+    border-top: 1px solid #E5E5E5;
+    border-right: 1px solid #E5E5E5;
+    background-color: #EFF5FB;
+    border-radius: 2px;
+    width: 500px;
+    height: 28px;
+    left: 7px;
+    bottom: 195px;
+    _bottom: 193px;
+    z-index: 1010;
+    display: none;
+    text-align: left;
+}
+
+#chat #attachment #attachment_holder {
+	position:relative;
+	top: 2px;
+	width: 66px;
+	height: 24px;
+	overflow:hidden;
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+}
+#chat #attachment #attachment_holder #attachment_file {
+	position:absolute;
+	top: 0px;
+	right: 0px;
+	width: 92%;
+	height:95%;
+	cursor:pointer;
+	opacity:0;
+	filter:alpha(opacity:0);
+	z-index:1999;
+	_display: inline;
+	_zoom: 1;
+}
+#chat #attachment #attachment_holder .attachment_btn {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:92%;
+	height:92%;
+	text-decoration:none;
+	font-size:12px;
+	font-weight:bold;
+	color:#fff;
+	color:rgba(255,255,255,1);
+	_color:#fff;
+	cursor: pointer;
+/*	margin-left:5px;
+	margin-top:2px;*/
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+}
+
+
+#chat #attachment #upfile {
+	position:absolute;
+	left: 70px;
+	top: 2px;
+	width: 200px;
+	height: 16px;
+	margin-left:5px;
+	margin-top:2px;
+	font-size: 12px;
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+}
+#chat #attachment .attachment_btn {
+	position:absolute;
+	top: 2px;
+	text-decoration:none;
+	font-size:12px;
+	font-weight:bold;
+	color:#fff;
+	color:rgba(255,255,255,1);
+	_color:#fff;
+	cursor: pointer;
+	margin-left:5px;
+	margin-top:2px;
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+}
+
+#chat #attachment #send_attachment {
+	left: 280px;
+}
+#chat #attachment #close_attachment {
+	left: 330px;
+}
+
+#chat #attachment #attachment_uploading {
+	position:absolute;
+	left: 390px;
+	top: 6px;
+	width: 80px;
+	height: 18px;
+	border: none;
+	/*display: inline-block;*/
+	display: none;
+	/*_display: inline;*/
+	_zoom: 1;
+}
+
+.send-btn {
+	float:right;
+	margin-top:14px;
+	margin-right:20px;
+	_margin-right:6px;
+	cursor: pointer;
+	-moz-user-select:none;
+}

@@ -1,0 +1,131 @@
+/* 除IE6浏览器的通用方法 */
+.ie6fixedTL {
+	position:fixed;
+	left:0;
+	top:0;
+}
+.ie6fixedBR {
+	position:fixed;
+	right:5px;
+	bottom:5px;
+}
+
+/* IE6浏览器的特有方法 */
+/* 修正IE6振动bug */
+* html,* html body {
+	background-image:url(about:blank);
+	background-attachment:fixed
+}
+* html .ie6fixedTL {
+	position:absolute;
+	left:expression(eval(document.documentElement.scrollLeft));
+	top:expression(eval(document.documentElement.scrollTop));
+}
+* html .ie6fixedBR {
+	position:absolute;
+	left: expression(eval( ((document.compatMode != "BackCompat")?document.documentElement.scrollLeft:document.body.scrollLeft) + ((document.compatMode != "BackCompat")?document.documentElement.clientWidth:document.body.clientWidth) - this.offsetWidth -(parseInt(this.currentStyle.marginLeft,10)||0)-(parseInt(this.currentStyle.marginRight,10)||0)) -2);
+	top: expression(eval( ((document.compatMode != "BackCompat")?document.documentElement.scrollTop:document.body.scrollTop) + ((document.compatMode != "BackCompat")?document.documentElement.clientHeight:document.body.clientHeight) - this.offsetHeight - (parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)) -2);
+}
+
+body { behavior:url("../css/csshover.htc"); }
+
+.yahei {
+	font-family:"Microsoft YaHei", sans-serif;
+}
+
+.clear_both {
+	clear: both;
+}
+
+.sp-container {
+	width:162px;
+	min-height:145px;
+	_height: 145px;
+}
+
+.sp-head {
+	width:162px;
+	height:6px;
+	_overflow: hidden;
+	background:url(../images2/msg-head.gif) no-repeat;
+}
+
+.sp-body {
+	width:160px;
+	min-height:140px;
+	_height: 140px;
+	border:solid 1px #CCC;
+	border-top:none;
+	padding-top: 2px;
+	background-color:#F7F7F7;
+}
+
+.sp-row {
+	position: relative;
+	left: 0;
+	top: 0;
+	margin-top:0px;
+	height: 40px;
+}
+
+.sp-logo {
+	position: absolute;
+	left: 10px;
+	width:40px;
+	height:40px;
+	/*background:url(../images2/logo.gif) no-repeat;*/
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+	cursor: pointer;
+}
+
+.sp-title1 {
+	position: absolute;
+	left: 60px;
+	height: 40px;
+	font-size:16px;
+	line-height: 36px;
+	font-weight:bold;
+	display: inline-block;
+	_display: inline;
+	_zoom: 1;
+}
+
+.sp-close {
+	width:15px;
+	height:15px;
+	background:url(../images2/close.gif) no-repeat;
+	margin-left:140px;
+	cursor:pointer;
+}
+
+.sp-close:hover {
+	width:15px;
+	height:15px;
+	background:url(../images2/close-hover.gif) no-repeat;
+	margin-left:140px;
+	cursor:pointer;
+}
+
+.sp-btn {
+	position:relative;
+	width:147px;
+	height:30px;
+	_height:39px;
+	background:url(../images2/s-btn.gif) no-repeat;
+	cursor:pointer;
+	text-align:center;
+	padding-top:10px;
+	margin-top:8px;
+	margin-left:7px;
+	_margin-left:3px;
+}
+
+.sp-tel {
+	position:relative;
+	top: 10px;
+	_top: 0px;
+	font-size: 14px;
+	text-align: center;
+}

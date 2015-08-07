@@ -18,8 +18,11 @@
 		* onlinecall.js[在线客服js文件]
 	* libs [第三方库文件夹]
 	* client.html [入口文件]
+* server_plugin_webim [位于IM服务器，基于ajax技术，负责与前端webim通讯的组件]
 
 ###部署方式
+恩布IM服务器在安装的时候会内置一个webim,访问方式为`http://xxx/webim/client.html`,xxx是恩布IM服务器的http访问地址。用户也可以独立部署，将webim文件夹部署到任何一个http服务器，请参考如下配置<br/>
+
 * 修改webim/client.html中的相关内容
 	* 修改主服务器LC地址，$.ebMsg.options.DOMAIN_URL="xxx";，例如 `$.ebMsg.options.DOMAIN_URL="entboost.entboost.com"`;
 	
