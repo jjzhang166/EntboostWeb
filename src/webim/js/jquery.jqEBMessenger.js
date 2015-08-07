@@ -1960,7 +1960,7 @@
             text_area_log('processCallConnected===' + call_info.cm_url);
 
             var try_times =0;//必须定义变量
-            jqEBM.fn.load_iframe(call_info.cm_url+'/iframe_domain.html?fr_name=' + jqEBM.fn.domainURI(call_info.cm_url) + (jqEBM.options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION,
+            jqEBM.fn.load_iframe(call_info.cm_url+ jqEBM.options.WEBIM_PLUGIN +'/iframe_domain.html?fr_name=' + jqEBM.fn.domainURI(call_info.cm_url) + (jqEBM.options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION,
                 try_times,
                 function(){
                     jqEBM.EBCM.ebwebcm_enter(call_info.call_id);
