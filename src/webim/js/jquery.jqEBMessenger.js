@@ -3239,8 +3239,8 @@
             NETWORK_ERROR: {code:-2, msg:"网络错误"},
             UNKNOWN: {code:-1, msg:"未知错误"},
             OK: {code:0, msg:"成功"},
-            QUERYUSER_FAILURE: {code:1, msg:"查询用户信息失败"},
-            LOGON_FAILURE: {code:2, msg:"登录失败"},
+            QUERYUSER_FAILURE: {code:1, msg:"账号或密码错误"},
+            LOGON_FAILURE: {code:2, msg:"账号或密码错误"},
             ONLINE_FAILURE: {code:3, msg:"设置在线失败"},
             OFFLINE_FAILURE: {code:4, msg:"下线失败"},
             TIMEOUT: {code:5, msg:"超时"},
@@ -3757,6 +3757,7 @@
                         EBCM.ebwebcm_hb(callInfo.cm_url, pv.from_uid);
 
                         eventHandle.onEnterCall(callInfo,null);
+
                     }
                     break;
 

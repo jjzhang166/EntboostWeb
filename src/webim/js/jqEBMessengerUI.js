@@ -26,9 +26,9 @@
             },
 
             organize:{//企业组织架构配置
-                ent_icon : "images/ent.png", //企业图标
+                ent_icon : "images/company.png", //企业图标
                 group_icon : "images/group.png", //群组图标
-                member_icon : "images/member.png" //群组成员图标
+                member_icon : "images/logo2.gif" //群组成员图标
             },
 
             cs: { //客服界面配置
@@ -131,7 +131,7 @@
                             + '    </div>'
                             + '    <textarea class="layim_write" id="layim_write" style="z-index: 999;"></textarea>'
                             + '    <div class="layim_send">'
-                            + '        <div style="font-size: x-small;float: right;height: 40px;line-height: 45px;color:#77c08b;margin-right: 60px;">快捷键:ctrl+enter</div>'
+                            + '        <div style="font-size: x-small;float: right;height: 40px;line-height: 45px;color:#77c08b;margin-right: 60px;">换行:ctrl+enter</div>'
                             + '        <div class="layim_sendbtn " id="layim_sendbtn">发送</div>'
                             //+ '         <span class="layim_enter" id="layim_enter"><em class="layim_zero"></em></span>'
                             //+ '        <div class="layim_sendtype" id="layim_sendtype">'
@@ -150,32 +150,38 @@
                            '</table>' +
                            '</div>',
 
-               logon_win_new: '<div class="main" id="login_win">'
-                                +'<div class="login-form">'
-                                +'<h1>恩布互联</h1>'
-                                +'<div class="head">'
-                                +'<img src="images/logo.gif" />'
-                                +'</div>'
-                                +'<form onsubmit="return false;">'
-                                +    '<input type="text" class="text" id="accountInput" placeholder="请输入IM账号">'
-                                +    '<input type="password"  id="passwordInput" placeholder="请输入IM密码">'
-                                +    '<div class="submit">'
-                                +   '<input type="submit"  value="登录" id="logonBtn">'
-                                +    '</div>'
-                                +    '<p>'
-                                +        '<a id="reg_btn" style="float:left;text-decoration: none;" href="javascript:;">注册</a>'
-                                +        '<a id="cus_btn" style="float:right;text-decoration: none;" href="javascript:;">在线咨询</a>'
-                                +    '</p>'
-                                +'</form>'
-                            +'</div>'
+               logon_win_new: '<div class="eb-login" id="login_win">'+
+                                '<div class="eb-logo">'+
 
-                            +'</div>'
-               ,
+                                '</div>'+
+                                '<div class="eb-input">'+
+                                '<div>'+
+                                '<input type="text" id="accountInput" class="eb-form" placeholder="账号:"/>'+
+
+                                '</div>'+
+                                '<div>'+
+                                '<input type="password" id="passwordInput" class="eb-form" placeholder="密码:"/>'+
+
+                                '</div>'+
+                                '</div>'+
+                                '<div class="eb-button" id="logonBtn">'+
+                                '登录'+
+                                '</div>'+
+
+                                '<div class="down-button">'+
+                                '<div id="regBtn" class="eb-button button-yellow" onclick="window.open(\'http://www.entboost.com/usercenter/register\');">'+
+                                'IM注册'+
+                                '</div>'+
+                                '<div class="eb-button button-blue" id="cus_btn">'+
+                                '在线咨询'+
+                                '</div>'+
+                                '</div>'+
+                                '</div>',
                main_win: '<div id="xximmm" class="xxim_main">'
                            +'<div class="xxim_top" id="xxim_top">'
-                           +'  <div class="xxim_search"><i></i><input placeholder="按回车搜索：用户、账号" id="xxim_searchkey" />'
+                           +'  <div class="xxim_search"><img class="sbtn" src="../images/search.png" /><input placeholder="按回车搜索：用户、账号" id="xxim_searchkey" />'
                            +   '<div id="searchuser_list" class="searchuser_list"></div><span id="xxim_closesearch">×</span></div>'
-                           +'  <div class="xxim_tabs" id="xxim_tabs"><span class="xxim_tabgroup xxim_tabnow" title="群组"><img src="images/depart.png" alt=""/></span><span class="xxim_tabfriend" title="好友"><img src="images/user.png" alt=""/></span><span class="xxim_latechat"  title="组织架构"><img src="images/home.png" alt=""/></span></div>'
+                           +'  <div class="xxim_tabs" id="xxim_tabs"><span class="xxim_tabgroup xxim_tabnow" title="群组"><img src="images/depart.png" alt=""/></span><span class="xxim_tabfriend" title="好友"><img src="images/user-white.png" alt=""/></span><span class="xxim_latechat"  title="组织架构"><img src="images/home-white.png" alt=""/></span></div>'
                            +'  <ul class="xxim_list" style="display: block;" id="group_list"></ul>'
                            +'  <ul class="xxim_list" style="display:none;" id="contact_list">'
                            +     '<li style="display: none;" class="xxim_parentnode">'
@@ -184,7 +190,7 @@
                            +         '</ul>'
                            +    '</li>'
                            +  '</ul>'
-                           +'  <ul class="xxim_list ztree " style="display: none;width: 100%;border: none;height: 320px;border: 0px;margin: 0px;background: #fff;" id="struct_list"></ul>'
+                           +'  <ul class="xxim_list ztree " style="display: none;width: 100%;border: none;height: 320px;border: 0px;margin: 0px;" id="struct_list"></ul>'
                            +'  <ul class="xxim_list xxim_searchmain" id="xxim_searchmain"></ul>'
                            +'</div>'
                            +'<ul class="xxim_bottom" id="xxim_bottom">'
@@ -195,16 +201,16 @@
                            +'<span class="xxim_setoffline"><i></i>隐身</span>'
                            +'</div>'
                            +'</li>'
-                           +'<li class="xxim_mymsg" id="xxim_mymsg" title="最近会话"><i></i></li>'
+                           +'<li class="xxim_mymsg" id="xxim_mymsg" title="最近会话"><img class="img_center" src="images/his.png" /></li>'
                            //+'<li class="xxim_seter" id="xxim_seter" title="设置" onclick="$.ebTemp.event.get_user_info($.jqEBMessenger.clientInfo.my_uid);">'
                            +'<li class="xxim_seter" id="xxim_seter" title="设置" onclick="$.ebSetup.init();">'
 
-                           +'<i></i>'
+                           +'<img class="img_center" src="images/setting.png" />'
                            +'<div class="">'
 
                            +'</div>'
                            +'</li>'
-                           +'<li title="退出" class="xxim_hide" id="xxim_hide" onclick="$.ebTemp.event.exit();"><i></i></li>'
+                           +'<li title="退出" class="xxim_hide" id="xxim_hide" onclick="$.ebTemp.event.exit();"><img class="img_center" src="images/exit.png" /></li>'
                            +'<li id="xxim_on" class="xxim_icon xxim_on" onclick="$.ebTemp.event.expand();"></li>'
                            +'<div state="not-active" class="layim_min" id="layim_min" style="display: none;" onclick="$.ebTemp.event.reopen_chat_win()">还原聊天窗口</div>'
                            +'</ul>'
@@ -442,8 +448,10 @@
 
                     if ( borswer.indexOf( "ie" ) >= 0 ){
                         var embed = document.mes_ring;
-//                        embed.volume = 100;
-                        embed.play();
+                        if(embed && embed.play){
+                            embed.play();
+                        }
+
                     }else{
                         document.getElementById("mes_ring").play();
                     }
@@ -929,6 +937,11 @@
 
             },
             init_logon_win: function (logon_callback) {
+                $("#login_win").keydown(function(e){
+                    if(e.keyCode == 13){
+                        $("#logonBtn").click();
+                    }
+                });
                 $("#logonBtn").on('click', function () {
                     var account = $.trim($("#accountInput").val());
                     var password = $.trim($("#passwordInput").val());
@@ -970,7 +983,7 @@
             },
             init_event: function () {
                 var dom = $.ebTemp.dom;
-                $("#layim_write").xheditor({tools: 'Emot,Img', width: '100%', height: 100, forcePtag: true});
+                $("#layim_write").xheditor({tools: 'Emot,Img', width: '100%', height: 100, forcePtag: true,layerShadow:0});
                 $("#xhe0_Tool").parent().hide();
                 $("#xhe0_iframearea").css("height", "96px");
 
@@ -991,6 +1004,7 @@
                     if (msg.replace(/\s/g, '') === '' ||
                         ($('<div>' + msg + '</div>').find('img').length === 0 && $.trim($('<div>' + msg + '</div>').text()).length === 0)) {
                         layer.tips('说点啥呗！', dom.send_btn, 2);
+                        dom.writer_area.val('');
                         dom.writer_area.focus();
 
                     } else {
@@ -1008,9 +1022,14 @@
                 dom.send_btn.click(send_fun);
                 var tframe = document.getElementById("xhe0_iframe").contentWindow || document.frames["xhe0_iframe"][0];
                 var doc = tframe.document;
+                $(doc.body).css("background-color","#EAFCFE");
                 $(doc.body).keydown(function (e) {
+                    if(e.ctrlKey && e.keyCode == 13){
 
-                    if (e.ctrlKey && e.keyCode == 13) {
+                        //dom.writer_area.val(dom.writer_area.val() + "\r\n");
+                        var body = doc.getElementsByTagName("body")[0];
+                        body.innerHtml = body.innerText + "\r\n";
+                    }else if ( e.keyCode == 13) {
                         send_fun();
                     }
 
@@ -1595,7 +1614,22 @@
                     var type = $(this).attr('class');
 
                     $("#xxim_tabs").children('span').removeClass('xxim_tabnow');
+
+
+                    $("#xxim_tabs").children('span').each(function(){
+                            var imgSrc = $(this).find("img").attr("src");
+                            if(imgSrc.indexOf("-white") == -1){
+                                imgSrc = imgSrc.split(".")[0] + "-white.png";
+
+                                $(this).find("img").attr("src",imgSrc);
+                            }
+
+
+                    });
+
                     $(this).addClass('xxim_tabnow');
+                    var imgName = $(this).find("img").attr("src");
+                    $(this).find("img").attr("src",imgName.replace(/-white/,""));
 
                     $("#contact_list,#group_list,#struct_list").hide();
                     if (type.indexOf('xxim_tabfriend') > -1) {
@@ -1746,38 +1780,7 @@
                 $(html).appendTo($('body'));
                 $.ebTemp.temp_init_handler.init_logon_win(logon_callback);
                 $("#accountInput").focus();
-                //$("#passwordInput,#accountInput").keydown(function(e){
-                //    if(e.keyCode == 13){
-                //        $("#logonBtn").click();
-                //    }
-                //});
-                //var index = $.layer({
-                //    type: 1,
-                //    closeBtn: false,
-                //    area: ['', ''],
-                //    //shade: [0],  //不显示遮罩
-                //    border: [0], //不显示边框
-                //    title: [
-                //        '登录',
-                //
-                //        'border:none; background:#61BA7A; color:#fff;'
-                //    ],
-                //    bgcolor: '#fff', //设置层背景色
-                //    page: {
-                //        html:html
-                //    },
-                //    shift: 'none',
-                //    success: function(layero){
-                //
-                //        $.ebTemp.temp_init_handler.init_logon_win(logon_callback);
-                //        $("#accountInput").focus();
-                //        $("#passwordInput,#accountInput").keydown(function(e){
-                //            if(e.keyCode == 13){
-                //                $("#logonBtn").click();
-                //            }
-                //        });
-                //    }
-                //});
+
                 $.ebCache.logon_win_index = "login_win";
 
             },
@@ -1785,6 +1788,7 @@
                 $("#"+$.ebCache.logon_win_index).hide();
                 $.ebCache.logon_win_index = null;
                 $('body').css('background','#fff');
+                $(".eb_error_tag").hide();
             }
         };
 
@@ -2109,9 +2113,58 @@
         var eb_client_config = $.eb_client_config;//配置信息
         var temp = $.ebTemp.temps;//网页模板
         var cache = $.ebCache;//缓存信息
+        var treeId = null; //tree所在元素的id
 
         $.extend({eb_organize:{
 
+            /**
+             * 用户在线状态变更后，重新排序
+             * @param data 在线数据
+             */
+            reList: function(data){
+                var gid = data.group_id;
+                var uid = data.from_uid;
+
+                var account = data.from_account;
+                var state = data.line_state;
+
+                var treeObj = $.fn.zTree.getZTreeObj(treeId);
+
+                var nodes = treeObj.getNodesByFilter(function(node){
+                    return node.id == uid;
+                });
+
+                $.each(nodes,function(index,node){
+                    node.line_state = state;
+                    var parentNode = node.getParentNode();
+                    var nodeList = parentNode.children;
+
+                    nodeList.sort(function(a,b){
+
+                        if(a.line_state != b.line_state){
+                            return b.line_state - a.line_state;
+                        }else{
+                            var str1 = $URL.toGBKInt(a.name);
+                            var str2 = $URL.toGBKInt(b.name);
+                            return str1 > str2 ? 1 : -1;
+
+                        }
+
+                    });
+                    treeObj.removeChildNodes(parentNode);
+                    treeObj.addNodes(parentNode,nodeList);
+                    nodeList = parentNode.children;
+                    $.each(nodeList, function(index, node){
+                        $.eb_organize._set_iconcss(node);
+                    });
+
+                });
+
+
+
+
+            }
+            ,
             /**
              * 初始化企业组织结构数据
              * @private
@@ -2124,15 +2177,12 @@
                 var groups = org.groups;//群组列表(包含个人群组)
                 var members = org.members;//成员列表
 
-
-
                 var data = [];
                 data.push({
                     isRoot:true,
                     id:'0',
-                    name:depart_info.enterprise_name,
-                    open:true,
-                    icon:eb_client_config.organize.ent_icon
+                    name: depart_info.enterprise_name + " ["+ $.eb_organize._count_members() +"]",
+                    open:true
 
                 });
                 for(var i=0;i<groups.length;i++){
@@ -2140,9 +2190,8 @@
                     if(g.enterprise_code != '0'){
 
                         g['pId'] = g.parent_code;
-                        g['name'] = g.group_name;
+                        g['name'] = g.group_name + " ["+ g.emp_count  +"]";
                         g['id'] = g.group_code;
-                        g['icon'] = eb_client_config.organize.group_icon;
                         g['isParent'] = true;
                         data.push(g);
                     }
@@ -2158,6 +2207,15 @@
 
 
             _node_click: function(event, treeId, treeNode, clickFlag){
+                var eb_tree = $.fn.zTree.getZTreeObj(treeId);
+                if(treeNode.isParent){
+                    if(treeNode.open){
+                        eb_tree.expandNode(treeNode,false,false,true,true);
+                    }else{
+                        eb_tree.expandNode(treeNode,true,false,true,true);
+                    }
+                }
+
                 var member_uid = treeNode.member_uid;
                 var name = treeNode.name;
                 if(member_uid){
@@ -2170,7 +2228,42 @@
 
             _node_expanded: {},//缓存组织结构部门是否已经展开
             vvv:"123",
+            /**
+             * 设置头像css
+             * @param id
+             * @private
+             */
+            _set_iconcss: function(node){
+                var icon = node['icon'];
+                var $img = $('<img />');
+                $img.attr('src',icon);
+                $img.css("width","17px");
+                $img.css("height", "17px");
+                $img.css("position","relative")
+                $img.css("top","14px");
 
+                var $imgSpan = $("#" + node.tId).find(".ico_docu");
+                $img.appendTo($imgSpan);
+
+                $imgSpan.removeAttr("style");
+                $.im_state.set_state($imgSpan,node.line_state);
+
+            }
+            ,
+            /**
+             * 计算公司人数
+             * @private
+             */
+            _count_members: function(){
+                var org = $.ebCache.org;
+                var groups = org.groups;
+                var allMembers = 0;
+                $.each(groups, function(index, group){
+                    allMembers += parseInt(group.emp_count);
+                });
+                return allMembers;
+            }
+            ,
             _node_expand: function(event, treeId, treeNode){//展开部门，加载联系人
 
                 var expands = $.eb_organize._node_expanded;
@@ -2189,17 +2282,32 @@
                     for(var i=0;i<members.length;i++){
                         var m = members[i];
                         if(cache.get_group(m.group_code).enterprise_code != '0'){
+
                             m['id'] = m.member_uid;
                             m['pId'] = m.group_code;
                             m['isParent'] = false;
+                            var headFile = eb_client_config.organize.member_icon;
+                            if(m['head_file'] && m['head_file'].length > 0) {
+                                headFile = m['head_file'];
+                            }
+                            m['icon'] = headFile;
                             m['name'] = m.user_name.length > 0 ? m.user_name : m.member_account;
-                            m['icon'] = eb_client_config.organize.member_icon;
                             newNodes.push(m);
+
                         }
                     }
                     eb_tree.addNodes(treeNode,newNodes,true);
                     treeNode['expanded'] = true;
                     expands[treeNode.id] = true;
+
+
+                    var nodeList = treeNode.children;
+
+                    $.each(nodeList, function(index, node){
+                        $.eb_organize._set_iconcss(node);
+
+                    });
+
                 });
 
 
@@ -2207,12 +2315,25 @@
             },
 
             init:function(id){
+                treeId = id;
                 if(!cache.org.enterprise_info ){
                     $(".xxim_latechat").hide();
                     return;
                 }
                 var click_event = this._node_click;
                 var expand_event = this._node_expand;
+                function addDiyDom(treeId, treeNode) {
+                    var spaceWidth = 5;
+                    var switchObj = $("#" + treeNode.tId + "_switch"),
+                        icoObj = $("#" + treeNode.tId + "_ico");
+                    switchObj.remove();
+                    icoObj.before(switchObj);
+
+                    if (treeNode.level > 1) {
+                        var spaceStr = "<span style='display: inline-block;width:" + (spaceWidth * treeNode.level)+ "px'></span>";
+                        switchObj.before(spaceStr);
+                    }
+                }
                 var setting = {
                     data: {
                         simpleData: {
@@ -2222,10 +2343,44 @@
                     callback:{
                         onClick: click_event,
                         onExpand: expand_event
+                    },
+                    view: {
+                        showLine: false,
+                        showIcon: false,
+                        selectedMulti: false,
+                        dblClickExpand: false,
+                        addDiyDom: addDiyDom
                     }
                 };
                 var init_data = this._init_data();
                 $.fn.zTree.init($("#"+id), setting, init_data);
+                var treeObj = $("#"+id);
+                treeObj.addClass("showIcon")
+
+                var eb_tree = $.fn.zTree.getZTreeObj(treeId);
+                var root = eb_tree.getNodesByFilter(function(node){
+                    return node.id == "0";
+                },true);
+                var $button = $("#" + root.tId).find(".switch:first");
+                //$button.removeClass("button");
+                var $comImage = $("<img src='"+eb_client_config.organize.ent_icon+"' />");
+                $comImage.css("width","20px;");
+                $comImage.css("height","20px");
+
+                $comImage.appendTo($button);
+
+
+                //var cpmpanyPram = $("[title*='eb_company']").attr("title");
+                //$("[title*='eb_company']").find("span:first").hide();
+                //var $comImage = $("<img src='"+eb_client_config.organize.ent_icon+"' />");
+                //$comImage.css("width","20px;");
+                //$comImage.css("height","20px");
+                //$comImage.css("position","relative");
+                //$comImage.css("top","5px");
+                //$("[title*='eb_company']").find("span:last").html("");
+                //$comImage.appendTo($("[title*='eb_company']").find("span:last"));
+                //$("[title*='eb_company']").find("span:last").append("<span style='margin-left: 5px;'>" + cpmpanyPram + "</span>");
+
             }
 
 
@@ -2295,14 +2450,22 @@
              * @param index 需要关闭的特效、窗口编号...
              */
             state_handler: function(state, index){
+
                 if(index){
                     layer.close(index);
                 }
+                $(".eb_error_tag").show();
+                var text = "未知错误";
                 if(state.msg){
-                    layer.alert(state.msg);
-                }else{
-                    layer.alert("未知错误");
+                    text = state.msg;
+
                 }
+                $("#error_span").html(state.msg);
+                setTimeout(function(){
+                    $(".eb_error_tag").hide();
+                },3000);
+
+
 
             }
             ,
@@ -2374,7 +2537,7 @@
 
                 var im_state = $.im_state;
                 im_state.kick_off_listerner();
-                im_state.cmhb_error_listerner();
+                //im_state.cmhb_error_listerner();
                 var agent = window.navigator.userAgent;
                 if(agent.indexOf('MSIE') == -1){
                     im_state.check_leave();
@@ -2534,13 +2697,13 @@
 
                                 var md5_password = $.md5(user.uid + "" + password).toLowerCase();
                                 //登录
-                                var load_index = layer.load();
+                                var load_index = layer.load("登录中...",60);
 
                                 $.ebMsg.logonAccount(user.uid, md5_password, 4096 ,function(param){
 
 
 
-                                    $.ebTemp.temp_handler.close_logon_win();
+
                                     //上线
 
                                     $.ebMsg.online(function(){
@@ -2566,6 +2729,7 @@
                                                     $.ebTemp.temp_handler.show_main_win(contactList,org);
                                                     $.im_state.init();
                                                     layer.close(load_index);
+                                                    $.ebTemp.temp_handler.close_logon_win();
                                                 }
 
 
@@ -2758,6 +2922,8 @@
         //用户在线状态通知事件
         $.ebMsg.eventHandle.onLineStateChange = function(data,type){
 
+            $.eb_organize.reList(data);//组织架构在线状态
+
             var gid = data.group_id;
             var uid = data.from_uid;
             var account = data.from_account;
@@ -2890,7 +3056,7 @@
                             $content.fadeOut();
                         },2000);
                     });
-                    $("[recall_account='"+uid+"']").hide();
+                    $("[recall_account='"+uid+"']").remove();
                     $.ebCache.recall_cache[uid] = null;
 
                 }
@@ -2952,7 +3118,7 @@
                         },2000);
                     });
 
-                    $("[recall_account='"+group_code+"']").hide();
+                    $("[recall_account='"+group_code+"']").remove();
                     $.ebCache.recall_cache[group_code] = null;
                 }
                 var group_info = $.ebCache.get_group(group_code);
