@@ -179,7 +179,7 @@
                                 '</div>',
                main_win: '<div id="xximmm" class="xxim_main">'
                            +'<div class="xxim_top" id="xxim_top">'
-                           +'  <div class="xxim_search"><img class="sbtn" src="../images/search.png" /><input placeholder="按回车搜索：用户、账号" id="xxim_searchkey" />'
+                           +'  <div class="xxim_search"><img class="sbtn" src="./images/search.png" /><input placeholder="按回车搜索：用户、账号" id="xxim_searchkey" />'
                            +   '<div id="searchuser_list" class="searchuser_list"></div><span id="xxim_closesearch">×</span></div>'
                            +'  <div class="xxim_tabs" id="xxim_tabs"><span class="xxim_tabgroup xxim_tabnow" title="群组"><img src="images/depart.png" alt=""/></span><span class="xxim_tabfriend" title="好友"><img src="images/user-white.png" alt=""/></span><span class="xxim_latechat"  title="组织架构"><img src="images/home-white.png" alt=""/></span></div>'
                            +'  <ul class="xxim_list" style="display: block;" id="group_list"></ul>'
