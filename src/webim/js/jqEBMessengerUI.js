@@ -462,6 +462,9 @@
             ,
             exit:function(){//退出登录
                 layer.confirm("您确定退出吗?",function(){
+                    $.each($.ebCache.chatid_list, function(i, item){
+                        $.ebMsg.ebcm_exit(item);
+                    });
                     $.ebMsg.offline(function(){
                         window.onbeforeunload = null;
                         window.location.reload();
@@ -1838,7 +1841,7 @@
         //显示聊天界面
         $.extend({
             ebCache : {
-
+                chatid_list:[],//会话id列表
                 recent_call_cache: [],//最近会话列表[{type:xxx,id:xxx}] type 1、用户 2、群组
                 search_user: {},//搜索用户信息缓存{key:[list]}
                 recall_cache:{},//会话失效缓存，{uid:callInfo}
@@ -2489,11 +2492,10 @@
 
                         return "该操作将放弃保存当前的消息内容";
                     };
-                    window.onunload = function () {
-
-
-                        $.ebMsg.offline(function(param){},function(state){});
-                    };
+                    //window.onunload = function () {
+                    //
+                    //    $.ebMsg.offline(function(param){},function(state){});
+                    //};
 
 
             },
@@ -2730,6 +2732,9 @@
                                                     $.im_state.init();
                                                     layer.close(load_index);
                                                     $.ebTemp.temp_handler.close_logon_win();
+                                                    setInterval(function(){
+                                                        $.jqEBMessenger.EBUM.ebwebum_loadinfo();
+                                                    },120000);
                                                 }
 
 
@@ -3036,7 +3041,7 @@
 
 
 
-
+            $.ebCache.chatid_list.push(callInfo.chat_id);
             var accounts = callInfo.accounts;
             var group_code = callInfo.group_code;//群组ID，0代表一对一对话
 

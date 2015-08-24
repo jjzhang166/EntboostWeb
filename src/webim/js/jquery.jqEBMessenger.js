@@ -1793,7 +1793,7 @@
          * @param from_uid {int} 用户id 新增参数(2015-04-07)
          * @param call_id {int} 会话编号
          */
-        EBCM.ebwebcm_exit = function (from_uid, call_id) {
+        EBCM.ebwebcm_exit = function (call_id) {
             if (!call_id) {
                 text_area_log("ebwebcm_exit call_id is 0");
                 return;
@@ -1813,7 +1813,7 @@
 
             var parameter = {
                 chat_id: callInfo.chat_id,
-                from_uid: from_uid
+                from_uid: jqEBM.clientInfo.my_uid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.exit"],
                 jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.exit"),
@@ -4202,6 +4202,26 @@
        var clientInfo = jqEBM.clientInfo;
 
 
+       /**
+        * 退出cm
+        * @param uid 用户id
+        * @param chatid 会话id
+        * @param successCallback
+        * @param failureCallback
+        */
+       api.ebcm_exit = function(chatid, successCallback,failureCallback){
+           var try_times = 0;//必须定义变量
+           //载入跨域执行页面
+           var url =options.HTTP_PREFIX + options.DOMAIN_URL + options.WEBIM_PLUGIN + "/iframe_domain.html?fr_name="
+               + fn.domainURI(options.HTTP_PREFIX + options.DOMAIN_URL) + (options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION;
+           fn.load_iframe(url,
+               try_times,
+               //用户登录
+               function () {
+                   jqEBM.EBCM.ebwebcm_exit(chatid , successCallback,failureCallback);
+               });
+
+       }
        /**
         * 加载组织架构 表情 公司信息
         * @param parameter {group_code:xxx,load_ent_dep:xxx,load_ent_dep:xxx,load_emp:xxx,load_image:xxx}
