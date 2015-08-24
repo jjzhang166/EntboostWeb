@@ -2785,7 +2785,9 @@
                 if(mes.type == "text"){
                     content += $.ebfn.htmlEncode(mes.content);
                 }else
+
                 if(mes.type = "screenshot"){
+                    
                     content += "<img type='screenshot' onclick='$.ebTemp.event.screenshot_handler($(this));' style='max-width:250px;cursor:pointer;' src='"+ mes.content +"'/>";
                 }else
                 if(mes.type = "emotion"){

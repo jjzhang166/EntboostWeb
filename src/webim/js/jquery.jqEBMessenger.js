@@ -3015,7 +3015,7 @@
                         content: richInfo[i].text
                     };
                 }  else if(richInfo[i].img) {//截图
-                    src = ((richInfo[i].cm_server.indexOf("http")===0)?"":"http://") + richInfo[i].cm_server + "/servlet.ebwebcm.res?file=" + richInfo[i].img;
+                    src = ((richInfo[i].url.indexOf("http")===0)?"":"http://") + richInfo[i].url + "/servlet.ebwebcm.res?file=" + richInfo[i].img;
                     entity = {
                         type: "screenshot",
                         content: src
@@ -3024,7 +3024,7 @@
                 else if(richInfo[i].resid) {//表情
                     src = [
                         "http://",
-                        richInfo[i].cm_server,
+                        richInfo[i].url,
                         "/servlet.ebwebcm.res?resid=",
                         richInfo[i].resid
                     ].join("");
