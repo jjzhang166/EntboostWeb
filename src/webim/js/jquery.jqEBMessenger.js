@@ -730,7 +730,8 @@
             "ebwebcm.fileack": 28,
             "ebwebum.loadols": 29,
             "ebwebum.searchuser": 30,
-            "ebwebum.sinfo":31
+            "ebwebum.sinfo":31,
+            "ebweblc.querysysinfo":32
 
         };
 
@@ -1319,6 +1320,27 @@
             ifrMessenger.sendMessage(jqEBM.apiMap["ebweblc.logonvisitor"],
                 jqEBM.fn.createRestUrl(jqEBM.options.HTTP_PREFIX + jqEBM.options.DOMAIN_URL, jqEBM.API_VERSION, "ebweblc.logonvisitor"),
                 $.toJSON(parameter),
+                true,
+                null,
+                function(state, param) {
+                    if(state == jqEBM.errCodeMap.OK) {
+                        if (successCallback) successCallback(param);
+                    } else {
+                        if (failureCallback) failureCallback(state);
+                    }
+                });
+        };
+
+        /**
+         *  查询服务器配置
+         * @param successCallback 成功回调
+         * @param failureCallback 失败回调
+         */
+        EBLC.ebweblc_querysysinfo = function(successCallback, failureCallback){
+
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebweblc.querysysinfo"],
+                jqEBM.fn.createRestUrl(jqEBM.options.HTTP_PREFIX + jqEBM.options.DOMAIN_URL, jqEBM.API_VERSION, "ebweblc.querysysinfo"),
+                $.toJSON({}),
                 true,
                 null,
                 function(state, param) {
@@ -3313,6 +3335,9 @@
             //其它错误
             EventHandle.prototype.onError = function(error) {};
 
+            //JSON数据错误
+            EventHandle.prototype.onJsonDataError = function(){};
+
 
 
             return new EventHandle();
@@ -3406,6 +3431,7 @@
         processor.processReceiveData = function (req, jsonString) {
 
             var jsonData = JSON.parse(jsonString);
+
             if (req.api != apiMap["ebwebum.loadorg"])
                 text_area_log("return pv:\n" + jsonString);
             else {
@@ -3435,7 +3461,17 @@
                     callback(errCodeMap.OK, accountInfo.getAccountInfo(jsonData.account));
                     break;
 
+                case apiMap["ebweblc.querysysinfo"]:
+                    if(jsonData.code != statecodeMap["EB_STATE_OK"]){
+                        text_area_log(jsonData.error);
+                        if(callback)
+                            callback(errCodeMap.QUERY_SYSTEM_INFO_FAILURE);
 
+                        break;
+                    }
+
+                    callback(errCodeMap.OK, jsonData);
+                    break;
                 case apiMap["ebwebum.userquery"]:
                     if(jsonData.code != statecodeMap["EB_STATE_OK"]){
                         text_area_log(jsonData.error);
@@ -4524,6 +4560,22 @@
                });
        };
 
+       /**
+        * 查询服务器配置
+        * @param successCallback
+        * @param failureCallback
+        */
+       api.querysysinfo = function(successCallback, failureCallback){
+           var try_times = 0;//必须定义变量
+           //载入跨域执行页面
+           fn.load_iframe(options.HTTP_PREFIX + options.DOMAIN_URL + options.WEBIM_PLUGIN + "/iframe_domain.html?fr_name="
+               + fn.domainURI(options.HTTP_PREFIX + options.DOMAIN_URL) + (options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION,
+               try_times,
+
+               function () {
+                   jqEBM.EBLC.ebweblc_querysysinfo(successCallback, failureCallback);
+               });
+       };
        //导出外部调用的api
        $.extend($.ebMsg, jqEBM.api);
 
