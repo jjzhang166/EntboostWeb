@@ -3192,7 +3192,7 @@
 
                 var click_time = $.ebCache.user_clicltime_map[uid];
 
-                if(click_time && new Date().getTime() - click_time < 10000){
+
 
                     if($.ebCache.user_type == "2"){
                         $.ebTemp.temp_handler.show_chat_win({
@@ -3205,15 +3205,17 @@
                         });
 
                     }else{
-                        $.ebTemp.temp_handler.show_chat_win({
-                            url : "javascript:;",
-                            face: eb_client_config.default_header,
-                            title: title,
-                            uid: uid,
-                            account: accountInfo.from_account,
-                            call_id: callInfo.chat_id
-                        });
-                        $.ebCache.add_recent_call('1', uid);
+                        if(click_time && new Date().getTime() - click_time < 10000) {
+                            $.ebTemp.temp_handler.show_chat_win({
+                                url: "javascript:;",
+                                face: eb_client_config.default_header,
+                                title: title,
+                                uid: uid,
+                                account: accountInfo.from_account,
+                                call_id: callInfo.chat_id
+                            });
+                            $.ebCache.add_recent_call('1', uid);
+                        }
                     }
 
 
@@ -3221,7 +3223,7 @@
                     $.ebTemp.fun.show_chat_area(uid);
                     delete $.ebCache.user_clicltime_map[accountInfo.from_account];
 
-                }
+
 
 
 

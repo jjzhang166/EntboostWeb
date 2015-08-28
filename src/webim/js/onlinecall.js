@@ -1,5 +1,5 @@
 //恩布在线客服访问域名
-var webimUrl="http://test-lc.entboost.com/webim";
+var webimUrl="http://webim.entboost.com";
 
 
 var getEBArgs=(function() {

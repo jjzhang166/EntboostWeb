@@ -15,52 +15,50 @@
     <script type="text/javascript" src="js/jquery.jqEBMessenger.min.js?v=201508061018" ></script>
     <script type="text/javascript" src="libs/ztree/jquery.ztree.all-3.5.js"></script>
 
-    <script src="libs/layer/layer.min.js"></script>
-    <script src="js/jqEBMessengerUI.min.js?v=201508061018"></script>
+
 </head>
 
 <body>
 <div class="eb_error_tag">
     <span id="error_span"></span>
 </div>
-
+<script src="libs/layer/layer.min.js"></script>
+<script src="js/jqEBMessengerUI.min.js?v=20150828"></script>
 
 <script type="text/javascript">
 
-    $(function(){
-        $.ebMsg.options.DOMAIN_URL="entboost.entboost.com";
-        $.ebMsg.options.WEBIM_URL="http://entboost.entboost.com/webim";
-        $.ebMsg.options.CUS_ACCOUNT="9009301234";
+
+    $.ebMsg.options.DOMAIN_URL="entboost.entboost.com";
+    $.ebMsg.options.WEBIM_URL="http://webim.entboost.com/client.html";
+    $.ebMsg.options.CUS_ACCOUNT="9009301111";
 
 
-        var error_text = undefined;
-        var browser = $.browser;
-        if(browser.msie){
-            var version = parseInt(browser.version);
+    var error_text = undefined;
+    var browser = $.browser;
+    if(browser.msie){
+        var version = parseInt(browser.version);
 
-            if(version < 8){
-                error_text = "本站已经不再对IE8以下版本的浏览器提供支持，您可以选择以下方式浏览：";
-            }
-
+        if(version < 8){
+            error_text = "本站已经不再对IE8以下版本的浏览器提供支持，您可以选择以下方式浏览：";
         }
-        if(error_text){
-            $('body').css('background',"#fff");
-            $('<div style="padding-left: 50px;padding-top: 50px;color:#317EAC;">'+ error_text +'</div>').appendTo($('body'));
-            $('<p style="padding-left: 50px;padding-top: 10px;font-size: 12px;">1.下载chrome、firefox、safari、opera等浏览器。</p>').appendTo($('body'));
-            $('<p style="padding-left: 50px;font-size: 12px;">2.升级你的IE到IE8-11。</p>').appendTo($('body'));
+
+    }
+    if(error_text){
+        $('body').css('background',"#fff");
+        $('<div style="padding-left: 50px;padding-top: 50px;color:#317EAC;">'+ error_text +'</div>').appendTo($('body'));
+        $('<p style="padding-left: 50px;padding-top: 10px;font-size: 12px;">1.下载chrome、firefox、safari、opera等浏览器。</p>').appendTo($('body'));
+        $('<p style="padding-left: 50px;font-size: 12px;">2.升级你的IE到IE8-11。</p>').appendTo($('body'));
 
 
+    }else{
+        var to_account = $.ebCache.$_GET['to_account'];
+        if(to_account && to_account.length > 0){
+            $.ebChat.logonVistor(to_account);
         }else{
-            var to_account = $.ebCache.$_GET['to_account'];
-            if(to_account && to_account.length > 0){
-                $.ebChat.logonVistor(to_account);
-            }else{
 
-                $.ebChat.logon();
-            }
+            $.ebChat.logon();
         }
-    });
-
+    }
 
 
 
