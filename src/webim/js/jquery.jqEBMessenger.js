@@ -659,6 +659,7 @@
             description: '',
             setting: '',
             default_member_code: '',
+            cm_sids: {},
 
             //um在线状态
             line_state: 0,
@@ -914,7 +915,7 @@
         };
 
         //api版本号
-        jqEBM.API_VERSION = "01";
+        jqEBM.API_VERSION = "02";
         //静态资源版本号
         jqEBM.STATIC_VERSION = "2014060601";
         //跨域调用引擎回调前缀
@@ -1239,7 +1240,9 @@
 
             var parameter = {
                 type:logon_type,
-                account: account
+                account: account,
+                sub_type: 4096
+
             };
 
 
@@ -1370,7 +1373,7 @@
         var ifrMessenger = window.ifrMessenger;
         var jqEBM =$.jqEBMessenger;
         var EBUM =jqEBM.EBUM = {};
-
+        
 
 
         /**
@@ -1385,7 +1388,8 @@
             if (!jqEBM.connectMap[key] || jqEBM.connectMap[key] === 0) {//限制全局只有一个um长连接
                 jqEBM.connectMap.increase(key);
                 var parameter = {
-                    uid: jqEBM.clientInfo.my_uid
+                    uid: jqEBM.clientInfo.my_uid,
+                    eb_sid: jqEBM.clientInfo.eb_sid
                 };
                 ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.hb"],
                     jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.hb"),
@@ -1403,7 +1407,8 @@
          */
         EBUM.ebwebum_loadcontact = function (successCallback, failureCallback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid
+                uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadcontact"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.loadcontact"),
@@ -1426,7 +1431,8 @@
          */
         EBUM.ebwebum_loadinfo = function (callback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid
+                uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
 
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadinfo"],
@@ -1448,6 +1454,7 @@
                 parameter = {};
             }
             parameter.uid = jqEBM.clientInfo.my_uid;
+            parameter.eb_sid =  jqEBM.clientInfo.eb_sid
 
 
 
@@ -1468,7 +1475,9 @@
         EBUM.user_query = function(account,successCallback,failureCallback){
             var parameter = {
                 uid: jqEBM.clientInfo.my_uid,
-                query_account: account
+                query_account: account,
+                eb_sid: jqEBM.clientInfo.eb_sid
+
             };
 
 
@@ -1497,7 +1506,8 @@
         EBUM.ebwebum_callgroup = function(gid, call_key , callback){
             var parameter = {
                 group_code:gid,
-                uid: jqEBM.clientInfo.my_uid
+                uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             if(call_key){
                 parameter.call_key = call_key;
@@ -1522,7 +1532,8 @@
         EBUM.ebwebum_callaccount = function (to_account, exist_call_id, call_key, callback) {
             var parameter = {
                 uid: jqEBM.clientInfo.my_uid,
-                to_account: to_account
+                to_account: to_account,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             if (exist_call_id) {
                 parameter.exist_call_id = exist_call_id;
@@ -1546,7 +1557,8 @@
          */
         EBUM.ebwebum_offline = function (callback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid
+                uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.offline"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.offline"),
@@ -1568,7 +1580,8 @@
                 //account: jqEBM.clientInfo.my_account,
                 online_key: jqEBM.clientInfo.my_um_online_key,
                 line_state: line_state,
-                appname: jqEBM.clientInfo.um_appname
+                appname: jqEBM.clientInfo.um_appname,
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.online"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.online"),
@@ -1594,7 +1607,8 @@
             var parameter = {
                 uid: jqEBM.clientInfo.my_uid,
                 call_id: call_id,
-                hangup: (hangup ? 1 : 0)
+                hangup: (hangup ? 1 : 0),
+                eb_sid: jqEBM.clientInfo.eb_sid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.hangup"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.hangup"),
@@ -1608,7 +1622,8 @@
         EBUM.ebwebum_loadols = function(gid,successCallback,failureCallback){
             var parameter = {
                 uid:jqEBM.clientInfo.my_uid,
-                group_code:gid
+                group_code:gid,
+                eb_sid: jqEBM.clientInfo.eb_sid
             }
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadols"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.loadols"),
@@ -1633,7 +1648,8 @@
         EBUM.ebwebum_searchuser = function(search_key, successCallback,failureCallback){
             var parameter = {
                 uid: jqEBM.clientInfo.my_uid,
-                "search-key":search_key
+                "search-key":search_key,
+                eb_sid: jqEBM.clientInfo.eb_sid
 
             }
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.searchuser"],
@@ -1658,6 +1674,9 @@
          */
         EBUM.ebwebum_sinfo = function(parameter,successCallback , failureCallback){
             parameter.uid = jqEBM.clientInfo.my_uid;
+
+
+            parameter.eb_sid = jqEBM.clientInfo.eb_sid;
 
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.sinfo"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.sinfo"),
@@ -1707,7 +1726,8 @@
                 jqEBM.connectMap.increase(key);
 
                 var parameter = {
-                    from_uid: from_uid
+                    from_uid: from_uid,
+                    eb_sid: jqEBM.clientInfo.cm_sids[cm_url]
                 };
                 ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.hb"]
                     , jqEBM.fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.hb")
@@ -1737,8 +1757,11 @@
                 callInfo.chat_id,
                 ', "private":',
                 isPrivate ? 1 : 0,
-                ', "rich_info":',
-                rich_info
+                ',"rich_info":',
+                rich_info,
+                ',"eb_sid":"',
+                jqEBM.clientInfo.cm_sids[callInfo.cm_url],
+                '"'
             ].join("");
             if (to_uid) {
                 parameterStr = parameterStr + ', "to_uid":' + to_uid;
@@ -1749,6 +1772,19 @@
 
             parameterStr = parameterStr + "}";
 
+
+            //var parameter = {
+            //    chat_id: callInfo.chat_id,
+            //    private: isPrivate ? 1 : 0,
+            //    rich_info: JSON.parse(rich_info),
+            //    eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
+            //}
+            //if(to_uid){
+            //    parameter.to_uid = to_uid;
+            //}
+            //if(from_uid){
+            //    parameter.from_uid = from_uid;
+            //}
 
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.sendrich"]
                 , jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.sendrich")
@@ -1793,6 +1829,9 @@
                 call_id: callInfo.call_id,
                 appname: callInfo.cm_appname
             };
+            if(jqEBM.clientInfo.cm_sids[callInfo.cm_url]){
+                parameter.eb_sid = jqEBM.clientInfo.cm_sids[callInfo.cm_url];
+            }
 
             if (callInfo.group_code == "0") {//非群组/非对方会话才填入离线用户参数
                 var account = callInfo.firstAccount();
@@ -1835,7 +1874,8 @@
 
             var parameter = {
                 chat_id: callInfo.chat_id,
-                from_uid: jqEBM.clientInfo.my_uid
+                from_uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.exit"],
                 jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.exit"),
@@ -1865,7 +1905,8 @@
             var parameter = {
                 from_uid: from_uid,
                 chat_id: chat_id,
-                apply: 1
+                apply: 1,
+                eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
             };
 
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.sendfile"],
@@ -1893,7 +1934,8 @@
                 chat_id: chat_id,
                 msg_id: msg_id,
                 ack_type: ack_type,
-                from_uid: jqEBM.clientInfo.my_uid
+                from_uid: jqEBM.clientInfo.my_uid,
+                eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
             };
 
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.fileack"],
@@ -2141,6 +2183,7 @@
          */
         processor.processLoadinfo = function (req, jsonData) {
             //待定
+
         };
 
         /**
@@ -3097,6 +3140,7 @@
 
         /**
          * ajax方式上传文件
+         * @param eb_sid
          * @param batch_number 批次号
          * @param url
          * @param secureuri
@@ -3107,7 +3151,7 @@
          * @param error_handle
          * @returns {Boolean}
          */
-        jqEBM.ajaxFileUpload = function (batch_number, url, secureuri, fileElementId, chat_id, from_uid ,success_handle, error_handle) {
+        jqEBM.ajaxFileUpload = function (eb_sid ,batch_number, url, secureuri, fileElementId, chat_id, from_uid ,success_handle, error_handle) {
 
             var parameter = {
 //			chat_id: chat_id,
@@ -3115,7 +3159,7 @@
             };
 
             $.ajaxFU.ajaxFileUpload({
-                url: url + "?chat_id=" + chat_id  + "&from_uid=" + from_uid + "&batch_number=" + batch_number, //你处理上传文件的服务端
+                url: url + "?chat_id=" + chat_id  + "&from_uid=" + from_uid + "&batch_number=" + batch_number + "&eb_sid=" + eb_sid, //你处理上传文件的服务端
                 secureuri: secureuri,
                 fileElementId: fileElementId,
                 dataType: 'json',
@@ -3582,6 +3626,7 @@
 
                     if (msgcodeMap['EB_WM_LOGON_SUCCESS'] == jsonData.msg) {
                         clientInfo.line_state = pv.line_state;
+                        clientInfo.eb_sid = jsonData.eb_sid;
                         callback(errCodeMap.OK, jsonData);
 //                        EBUM.ebwebum_loadorg(callback);
                         //um心跳
@@ -3778,6 +3823,8 @@
                     break;
                 case apiMap["ebwebcm.enter"]://本客户端cm_enter
 
+
+
                     if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
                         text_area_log(jsonData.error);
                         if(eventHandle)
@@ -3786,9 +3833,14 @@
                     }
 
                     if (msgcodeMap['CR_WM_ENTER_ROOM'] == jsonData.msg) {
+
+
+
                         pv = $.evalJSON(req.pv);
 
                         callInfo = chatMap[pv.call_id];
+
+                        clientInfo.cm_sids[callInfo.cm_url] = jsonData.eb_sid;
 
                         EBCM.ebwebcm_hb(callInfo.cm_url, pv.from_uid);
 
@@ -3910,6 +3962,10 @@
                     //没有返回数据
                     if (!jsonData) {
                         text_area_log("um no return data");
+                        setTimeout(function(){
+                            EBUM.ebwebum_hb();
+                        },2000);
+                        break;
                     }
 //                    //有报错信息
 //                    if (jsonData.error && jsonData.error != "timeout") {
@@ -4053,7 +4109,9 @@
                     //没有返回数据
                     if (!jsonData) {
                         text_area_log("cm no return data");
-                        EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+                        setTimeout(function(){
+                            EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+                        },2000);
                         break;
                     }
                     //有报错信息
@@ -4075,6 +4133,7 @@
                         text_area_log("processReceiveData ebwebcm.hb call_info not found for chat_id=" + jsonData.chat_id);
                         text_area_log("processReceiveData ebwebcm.hb chatMap===\n" + $.toJSON(chatMap));
                         EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+
 
 
 
@@ -4492,6 +4551,7 @@
                fileName: fileName,
                sendingCallback: sendingCallback,
                sentCallback: sentCallback
+
            };
            jqEBM.uploadAttachmentMap[batch_number] = batchObj;
            var from_uid = $.jqEBMessenger.clientInfo.my_uid;
@@ -4504,7 +4564,9 @@
 
            var callInfo =jqEBM.chatMap.callInfoByChatId(chatId);
 
-           jqEBM.ajaxFileUpload(batch_number,
+           var eb_sid = jqEBM.clientInfo.cm_sids[callInfo.cm_url];
+
+           jqEBM.ajaxFileUpload(eb_sid, batch_number,
                jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.sendfile"),
                false, fileElementId, chatId, from_uid , null, null);
 

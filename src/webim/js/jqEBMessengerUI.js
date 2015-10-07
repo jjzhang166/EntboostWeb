@@ -127,6 +127,8 @@
 //                            + '        <a href="javascript:;"><i class="layim_addimage" title="上传图片"></i></a>'
 
                             + '        <a id="file_upload_btn" href="javascript:;"><i class="layim_addfile" title="上传文件"></i></a>'
+
+                            + '        <a class="roaming" id="roaming">消息记录</a>'
 //
                             + '    </div>'
                             + '    <textarea class="layim_write" id="layim_write" style="z-index: 999;"></textarea>'
@@ -538,16 +540,16 @@
             }
             ,
             chatmore_add: function(account,name,type){//增加实时聊天联系人
-                if(!$.ebTemp.cache.chat_win_index){
-                    $.ebTemp.temp_handler.show_chat_win({
-                        url : "javascript:;",
-                        face:eb_client_config.default_header,
-                        title:'加载中...',
-                        uid:'',
-                        account:'',
-                        call_id:''
-                    });
-                }
+                //if(!$.ebTemp.cache.chat_win_index){
+                //    $.ebTemp.temp_handler.show_chat_win({
+                //        url : "javascript:;",
+                //        face:eb_client_config.default_header,
+                //        title:'加载中...',
+                //        uid:'',
+                //        account:'',
+                //        call_id:''
+                //    });
+                //}
 
                 var list = $("#layim_chatmore ul");
 
@@ -828,6 +830,7 @@
                             uid:info.accountInfo.uid,
                             account:info.accountInfo.uid,
                             call_id:info.callInfo.chat_id
+
                         });
 
                         $.ebTemp.fun.show_chat_area(info.accountInfo.uid);
@@ -850,7 +853,8 @@
                             title: info.group_name,
                             uid:info.group_code,
                             account:info.group_code,
-                            call_id:info.group_code
+                            call_id:info.group_code,
+                            type: "group"
                         });
 
                         $.ebTemp.fun.show_chat_area(info.group_code);
@@ -963,6 +967,29 @@
                     }
 
                 }
+                //修改漫游消息连接
+                var logon_params = $.ebCache.logon_params;
+                var ok = logon_params.my_um_online_key;
+                var add_params = "&gid=0&fuid=" + data.uid;
+                if(data.type == "group") {
+                    add_params = "&gid=" + data.uid;
+                }
+                var eb_url = "http://" + $.ebMsg.options.DOMAIN_URL
+                var roaming_url = eb_url + "/eb/chat/chat.csp?ok=" + ok + "&uid=" + logon_params.my_uid + add_params;
+                $("#roaming").unbind("click").bind("click",function(){
+                    $.layer({
+                        type: 2,
+                        shadeClose: true,
+                        title: $("#layim_title").html() + "的聊天消息",
+                        closeBtn: [0, true],
+                        shade: [0],
+                        border: [1, 0.3, '#000'],
+                        offset: ['20px',''],
+                        area: ['600px', ($(window).height() - 50) +'px'],
+                        iframe: {src: roaming_url}
+                    });
+                });
+
 
 
             },
@@ -979,6 +1006,7 @@
 
                 }
                 if(data['ent-logo-url'] && data['ent-logo-url'].length > 0){
+
                     var logoCss = "transparent url("+ data['ent-logo-url'] +") no-repeat scroll 0% 0%"
                     $(".eb-logo").css("background",logoCss);
                     var browser = $.browser;
@@ -1757,7 +1785,10 @@
                                     + '</div>');
                                 $.im_state.set_state($user,user.line_state)
                                 $user.click(function(){
+
+
                                     var uid = $(this).attr("account");
+                                    $.ebCache.user_clicltime_map[uid] = new Date().getTime();
                                     if(uid == $.jqEBMessenger.clientInfo.my_uid){
                                         layer.alert("不能呼叫自己");
                                         return;
@@ -1850,6 +1881,7 @@
                 $.ebMsg.querysysinfo(function(data){
 
                     if(data.code && data.code == "0"){
+                        $.ebCache.sysinfo = data;
                         var $html = $($.ebTemp.temps.logon_win_new);
 
 
@@ -1927,6 +1959,9 @@
         //显示聊天界面
         $.extend({
             ebCache : {
+                eb_sid:null,//token
+                sysinfo:{},//系统初始化信息
+                logon_params: {},//登录后参数
                 user_clicltime_map: {},//点击用户时间缓存
                 timer_map: {}, //退出会话计时器列表
                 chatid_list:[],//会话id列表
@@ -2284,6 +2319,7 @@
                         g['name'] = g.group_name + " ["+ g.emp_count  +"]";
                         g['id'] = g.group_code;
                         g['isParent'] = true;
+                        g['url'] = null;
                         data.push(g);
                     }
                 }
@@ -2737,7 +2773,7 @@
                     var load_index = layer.load();
                     $.ebCache.user_type = '2';
                     $.ebMsg.logonVisitor(function(data){
-
+                        $.ebCache.logon_params = data;
                         $.ebMsg.online(function(){
                             $.ebMsg.loadorg({
                                 load_ent_dep:0,
@@ -2784,19 +2820,28 @@
                     if(logon_user && logon_user.line_state == '0'){
                         $.ebTemp.temp_handler.show_logon_win(function(account, password){
                             $.ebMsg.queryUser(2, account, function(user){
-
+                                var acount_type = user['account-type'];
                                 var md5_password = $.md5(user.uid + "" + password).toLowerCase();
+                                var logon_type = 4096;
+                                if((acount_type && acount_type == "1") || $.ebCache.sysinfo['passwd-auth-mode'] == "2"){
+                                    md5_password = password;
+                                    logon_type = 4112;
+                                }
+
+
                                 //登录
                                 var load_index = layer.load("登录中...",60);
 
-                                $.ebMsg.logonAccount(user.uid, md5_password, 4096 ,function(param){
+                                $.ebMsg.logonAccount(user.uid, md5_password, logon_type ,function(param){
 
 
+                                    $.ebCache.logon_params = param;
 
 
                                     //上线
 
                                     $.ebMsg.online(function(){
+
                                         //加载联系人
                                         $.ebMsg.loadcontact(function(contactList){
 
@@ -2824,6 +2869,7 @@
                                                     $.im_state.init();
                                                     layer.close(load_index);
                                                     $.ebTemp.temp_handler.close_logon_win();
+                                                    $.jqEBMessenger.EBUM.ebwebum_loadinfo();
                                                     setInterval(function(){
                                                         $.jqEBMessenger.EBUM.ebwebum_loadinfo();
                                                     },120000);
@@ -3195,6 +3241,7 @@
 
 
                     if($.ebCache.user_type == "2"){
+
                         $.ebTemp.temp_handler.show_chat_win({
                             url : eb_client_config.url,
                             face: eb_client_config.default_header,
@@ -3205,6 +3252,7 @@
                         });
 
                     }else{
+
                         if(click_time && new Date().getTime() - click_time < 10000) {
                             $.ebTemp.temp_handler.show_chat_win({
                                 url: "javascript:;",
