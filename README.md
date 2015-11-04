@@ -4,6 +4,7 @@
 * [企业IM私有云下载](http://doc.entboost.com/index.php/Downloads)
 
   基于恩布互联平台Rest API实施
+  
 ##1.0.2版本 -- 2015-11-04
 + 修复已知BUG，提高系统稳定性
 
