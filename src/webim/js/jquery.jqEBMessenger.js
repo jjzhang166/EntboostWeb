@@ -1619,12 +1619,19 @@
          * @param gid 群组id
          *
          */
-        EBUM.ebwebum_loadols = function(gid,successCallback,failureCallback){
+        EBUM.ebwebum_loadols = function(params,successCallback,failureCallback){
             var parameter = {
                 uid:jqEBM.clientInfo.my_uid,
-                group_code:gid,
+                // group_code:gid,
                 eb_sid: jqEBM.clientInfo.eb_sid
+
             }
+            if(params){
+                for(var key in params){
+                    parameter[key] = params[key];
+                }
+            }
+            
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadols"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.loadols"),
                 $.toJSON(parameter),

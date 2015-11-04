@@ -133,7 +133,7 @@
                             + '    </div>'
                             + '    <textarea class="layim_write" id="layim_write" style="z-index: 999;"></textarea>'
                             + '    <div class="layim_send">'
-                            + '        <div style="font-size: x-small;float: right;height: 40px;line-height: 45px;color:#77c08b;margin-right: 60px;">换行:ctrl+enter</div>'
+                            + '        <div style="font-size: x-small;float: right;height: 40px;line-height: 45px;color:#77c08b;margin-right: 60px;">发送:ctrl+enter</div>'
                             + '        <div class="layim_sendbtn " id="layim_sendbtn">发送</div>'
                             //+ '         <span class="layim_enter" id="layim_enter"><em class="layim_zero"></em></span>'
                             //+ '        <div class="layim_sendtype" id="layim_sendtype">'
@@ -1116,17 +1116,22 @@
                 }
 
                 dom.send_btn.click(send_fun);
-                var tframe = document.getElementById("xhe0_iframe").contentWindow || document.frames["xhe0_iframe"][0];
-                var doc = tframe.document;
-                $(doc.body).css("background-color","#EAFCFE");
-                $(doc.body).keydown(function (e) {
+
+                var iFrame_input = document.getElementById("xhe0_iframe");
+
+                var tframe =  document.getElementById("xhe0_iframe").contentWindow
+                                || document.frames["xhe0_iframe"][0]
+                                || document.getElementById("xhe0_iframe").contentDocument;
+                var doc = tframe.document || tframe;
+                var $body = $(doc).find("body");
+                $body.css("background-color","#EAFCFE");
+
+                $body.keydown(function (e) {
                     if(e.ctrlKey && e.keyCode == 13){
 
-                        //dom.writer_area.val(dom.writer_area.val() + "\r\n");
-                        var body = doc.getElementsByTagName("body")[0];
-                        body.innerHtml = body.innerText + "<br/>";
-                    }else if ( e.keyCode == 13) {
                         send_fun();
+
+
                     }
 
                 });
@@ -2100,7 +2105,8 @@
 
                     var update_ols = function(group_id,members,call){
 
-                            $.ebMsg.loadols(group_id,function(params){
+                            var params = {group_code:group_id};
+                            $.ebMsg.loadols(params,function(params){
 
                                 var ols = params.user_ols;
                                 for(var i=0;i<members.length;i++){
@@ -2121,7 +2127,7 @@
 
 
                             }, function (state) {
-                                layer.alert(error.msg);
+                                layer.alert(state.msg);
                             });
                     }
 
@@ -2234,285 +2240,341 @@
     /**
      * 企业组织架构模块
      */
-    (function (window, $) {
+    (function(window, $) {
 
-        var eb_client_config = $.eb_client_config;//配置信息
-        var temp = $.ebTemp.temps;//网页模板
-        var cache = $.ebCache;//缓存信息
+        var eb_client_config = $.eb_client_config; //配置信息
+        var temp = $.ebTemp.temps; //网页模板
+        var cache = $.ebCache; //缓存信息
         var treeId = null; //tree所在元素的id
 
-        $.extend({eb_organize:{
+        $.extend({
+            eb_organize: {
 
-            /**
-             * 用户在线状态变更后，重新排序
-             * @param data 在线数据
-             */
-            reList: function(data){
-                var gid = data.group_id;
-                var uid = data.from_uid;
+                /**
+                 * 用户在线状态变更后，重新排序
+                 * @param data 在线数据
+                 */
+                reList: function(data) {
+                    var gid = data.group_id;
+                    var uid = data.from_uid;
 
-                var account = data.from_account;
-                var state = data.line_state;
+                    var account = data.from_account;
+                    var state = data.line_state;
 
-                var treeObj = $.fn.zTree.getZTreeObj(treeId);
+                    var treeObj = $.fn.zTree.getZTreeObj(treeId);
 
-                var nodes = treeObj.getNodesByFilter(function(node){
-                    return node.id == uid;
-                });
-
-                $.each(nodes,function(index,node){
-                    node.line_state = state;
-                    var parentNode = node.getParentNode();
-                    var nodeList = parentNode.children;
-
-                    nodeList.sort(function(a,b){
-
-                        if(a.line_state != b.line_state){
-                            return b.line_state - a.line_state;
-                        }else{
-                            var str1 = $URL.toGBKInt(a.name);
-                            var str2 = $URL.toGBKInt(b.name);
-                            return str1 > str2 ? 1 : -1;
-
-                        }
-
-                    });
-                    treeObj.removeChildNodes(parentNode);
-                    treeObj.addNodes(parentNode,nodeList);
-                    nodeList = parentNode.children;
-                    $.each(nodeList, function(index, node){
-                        $.eb_organize._set_iconcss(node);
+                    var nodes = treeObj.getNodesByFilter(function(node) {
+                        return node.id == uid;
                     });
 
-                });
+                    $.each(nodes, function(index, node) {
+                        node.line_state = state;
+                        var parentNode = node.getParentNode();
+                        var nodeList = parentNode.children;
 
+                        nodeList.sort(function(a, b) {
 
+                            if (a.line_state != b.line_state) {
+                                return b.line_state - a.line_state;
+                            } else {
+                                var str1 = $URL.toGBKInt(a.name);
+                                var str2 = $URL.toGBKInt(b.name);
+                                return str1 > str2 ? 1 : -1;
 
-
-            }
-            ,
-            /**
-             * 初始化企业组织结构数据
-             * @private
-             */
-            _init_data: function(){
-                var org = cache.org;
-
-                var depart_info = org.enterprise_info;//企业信息
-
-                var groups = org.groups;//群组列表(包含个人群组)
-                var members = org.members;//成员列表
-
-                var data = [];
-                data.push({
-                    isRoot:true,
-                    id:'0',
-                    name: depart_info.enterprise_name + " ["+ $.eb_organize._count_members() +"]",
-                    open:true
-
-                });
-                for(var i=0;i<groups.length;i++){
-                    var g = groups[i];
-                    if(g.enterprise_code != '0'){
-
-                        g['pId'] = g.parent_code;
-                        g['name'] = g.group_name + " ["+ g.emp_count  +"]";
-                        g['id'] = g.group_code;
-                        g['isParent'] = true;
-                        g['url'] = null;
-                        data.push(g);
-                    }
-                }
-
-                data.sort(function(a,b){
-                    return a.display_index - b.display_index;
-                });
-                return data;
-
-
-            },
-
-
-            _node_click: function(event, treeId, treeNode, clickFlag){
-                var eb_tree = $.fn.zTree.getZTreeObj(treeId);
-                if(treeNode.isParent){
-                    if(treeNode.open){
-                        eb_tree.expandNode(treeNode,false,false,true,true);
-                    }else{
-                        eb_tree.expandNode(treeNode,true,false,true,true);
-                    }
-                }
-
-                var member_uid = treeNode.member_uid;
-                var name = treeNode.name;
-                if(member_uid){
-                    var $obj = $('<div account="'+member_uid+'" name="'+name+'"></div>');
-                    $.ebTemp.event.click_contact($obj);
-
-                }
-            },
-
-
-            _node_expanded: {},//缓存组织结构部门是否已经展开
-            vvv:"123",
-            /**
-             * 设置头像css
-             * @param id
-             * @private
-             */
-            _set_iconcss: function(node){
-                var icon = node['icon'];
-                var $img = $('<img />');
-                $img.attr('src',icon);
-                $img.css("width","17px");
-                $img.css("height", "17px");
-                $img.css("position","relative")
-                $img.css("top","14px");
-
-                var $imgSpan = $("#" + node.tId).find(".ico_docu");
-                $img.appendTo($imgSpan);
-
-                $imgSpan.removeAttr("style");
-                $.im_state.set_state($imgSpan,node.line_state);
-
-            }
-            ,
-            /**
-             * 计算公司人数
-             * @private
-             */
-            _count_members: function(){
-                var org = $.ebCache.org;
-                var groups = org.groups;
-                var allMembers = 0;
-                $.each(groups, function(index, group){
-                    allMembers += parseInt(group.emp_count);
-                });
-                return allMembers;
-            }
-            ,
-            _node_expand: function(event, treeId, treeNode){//展开部门，加载联系人
-
-                var expands = $.eb_organize._node_expanded;
-
-                var eb_tree = $.fn.zTree.getZTreeObj(treeId);
-                if(expands[treeNode.id]){
-                    return;
-                }
-
-                if(treeNode.id == '0'){
-                    return;
-                }
-
-                cache.handler_members(treeNode.id, function(members){
-                    var newNodes = [];
-                    for(var i=0;i<members.length;i++){
-                        var m = members[i];
-                        if(cache.get_group(m.group_code).enterprise_code != '0'){
-
-                            m['id'] = m.member_uid;
-                            m['pId'] = m.group_code;
-                            m['isParent'] = false;
-                            var headFile = eb_client_config.organize.member_icon;
-                            if(m['head_file'] && m['head_file'].length > 0) {
-                                headFile = m['head_file'];
                             }
-                            m['icon'] = headFile;
-                            m['name'] = m.user_name.length > 0 ? m.user_name : m.member_account;
-                            newNodes.push(m);
 
-                        }
-                    }
-                    eb_tree.addNodes(treeNode,newNodes,true);
-                    treeNode['expanded'] = true;
-                    expands[treeNode.id] = true;
-
-
-                    var nodeList = treeNode.children;
-
-                    $.each(nodeList, function(index, node){
-                        $.eb_organize._set_iconcss(node);
+                        });
+                        treeObj.removeChildNodes(parentNode);
+                        treeObj.addNodes(parentNode, nodeList);
+                        nodeList = parentNode.children;
+                        $.each(nodeList, function(index, node) {
+                            $.eb_organize._set_iconcss(node);
+                        });
 
                     });
 
-                });
 
 
 
-            },
+                },
+                /**
+                 * 初始化企业组织结构数据
+                 * @private
+                 */
+                _init_data: function() {
 
-            init:function(id){
-                treeId = id;
-                if(!cache.org.enterprise_info ){
-                    $(".xxim_latechat").hide();
-                    return;
-                }
-                var click_event = this._node_click;
-                var expand_event = this._node_expand;
-                function addDiyDom(treeId, treeNode) {
-                    var spaceWidth = 5;
-                    var switchObj = $("#" + treeNode.tId + "_switch"),
-                        icoObj = $("#" + treeNode.tId + "_ico");
-                    switchObj.remove();
-                    icoObj.before(switchObj);
 
-                    if (treeNode.level > 1) {
-                        var spaceStr = "<span style='display: inline-block;width:" + (spaceWidth * treeNode.level)+ "px'></span>";
-                        switchObj.before(spaceStr);
-                    }
-                }
-                var setting = {
-                    data: {
-                        simpleData: {
-                            enable: true
+                   
+
+                    var org = cache.org;
+
+                    var depart_info = org.enterprise_info; //企业信息
+
+                    var groups = org.groups; //群组列表(包含个人群组)
+                    var members = org.members; //成员列表
+
+                    var data = [];
+                    data.push({
+                        isRoot: true,
+                        id: '0',
+                        name: depart_info.enterprise_name + " [0/" + $.eb_organize._count_members() + "]",
+                        open: true,
+                        members: $.eb_organize._count_members(),
+                        group_name: depart_info.enterprise_name
+
+                    });
+                    for (var i = 0; i < groups.length; i++) {
+                        var g = groups[i];
+                        if (g.enterprise_code != '0') {
+
+                            g['pId'] = g.parent_code;
+                            g['name'] = g.group_name + " [0/" + g.emp_count + "]";
+
+                            if((!g.emp_count) || parseInt(g.emp_count) == 0){
+                                g['name'] = g.group_name;
+                            }
+                            g['id'] = g.group_code;
+                            g['isParent'] = true;
+                            g['url'] = null;
+                            data.push(g);
                         }
-                    },
-                    callback:{
-                        onClick: click_event,
-                        onExpand: expand_event
-                    },
-                    view: {
-                        showLine: false,
-                        showIcon: false,
-                        selectedMulti: false,
-                        dblClickExpand: false,
-                        addDiyDom: addDiyDom
                     }
-                };
-                var init_data = this._init_data();
-                $.fn.zTree.init($("#"+id), setting, init_data);
-                var treeObj = $("#"+id);
-                treeObj.addClass("showIcon")
-
-                var eb_tree = $.fn.zTree.getZTreeObj(treeId);
-                var root = eb_tree.getNodesByFilter(function(node){
-                    return node.id == "0";
-                },true);
-                var $button = $("#" + root.tId).find(".switch:first");
-                //$button.removeClass("button");
-                var $comImage = $("<img src='"+eb_client_config.organize.ent_icon+"' />");
-                $comImage.css("width","20px;");
-                $comImage.css("height","20px");
-
-                $comImage.appendTo($button);
 
 
-                //var cpmpanyPram = $("[title*='eb_company']").attr("title");
-                //$("[title*='eb_company']").find("span:first").hide();
-                //var $comImage = $("<img src='"+eb_client_config.organize.ent_icon+"' />");
-                //$comImage.css("width","20px;");
-                //$comImage.css("height","20px");
-                //$comImage.css("position","relative");
-                //$comImage.css("top","5px");
-                //$("[title*='eb_company']").find("span:last").html("");
-                //$comImage.appendTo($("[title*='eb_company']").find("span:last"));
-                //$("[title*='eb_company']").find("span:last").append("<span style='margin-left: 5px;'>" + cpmpanyPram + "</span>");
+                    data.sort(function(a, b) {
+                        return a.display_index - b.display_index;
+                    });
+
+                    return data;
+
+
+                },
+
+
+                _node_click: function(event, treeId, treeNode, clickFlag) {
+                    var eb_tree = $.fn.zTree.getZTreeObj(treeId);
+                    if (treeNode.isParent) {
+                        if (treeNode.open) {
+                            eb_tree.expandNode(treeNode, false, false, true, true);
+                        } else {
+                            eb_tree.expandNode(treeNode, true, false, true, true);
+                        }
+                    }
+
+                    var member_uid = treeNode.member_uid;
+                    var name = treeNode.name;
+                    if (member_uid) {
+                        var $obj = $('<div account="' + member_uid + '" name="' + name + '"></div>');
+                        $.ebTemp.event.click_contact($obj);
+
+                    }
+                },
+
+
+                _node_expanded: {}, //缓存组织结构部门是否已经展开
+                vvv: "123",
+                /**
+                 * 设置头像css
+                 * @param id
+                 * @private
+                 */
+                _set_iconcss: function(node) {
+                    var icon = node['icon'];
+                    var $img = $('<img />');
+                    $img.attr('src', icon);
+                    $img.css("width", "17px");
+                    $img.css("height", "17px");
+                    $img.css("position", "relative")
+                    $img.css("top", "14px");
+
+                    var $imgSpan = $("#" + node.tId).find(".ico_docu");
+                    $img.appendTo($imgSpan);
+
+                    $imgSpan.removeAttr("style");
+                    $.im_state.set_state($imgSpan, node.line_state);
+
+                },
+                /**
+                 * 计算公司人数
+                 * @private
+                 */
+                _count_members: function() {
+                    var org = $.ebCache.org;
+                    var groups = org.groups;
+                    var allMembers = 0;
+                    $.each(groups, function(index, group) {
+                        
+                        if(group.group_type == '0'){
+                            allMembers += parseInt(group.emp_count);
+                        }
+                        
+                    });
+
+
+
+                    return allMembers;
+                },
+                _node_expand: function(event, treeId, treeNode) { //展开部门，加载联系人
+
+                    var expands = $.eb_organize._node_expanded;
+
+                    var eb_tree = $.fn.zTree.getZTreeObj(treeId);
+                    if (expands[treeNode.id]) {
+                        return;
+                    }
+
+                    if (treeNode.id == '0') {
+                        return;
+                    }
+
+                    cache.handler_members(treeNode.id, function(members) {
+                        var newNodes = [];
+                        for (var i = 0; i < members.length; i++) {
+                            var m = members[i];
+                            if (cache.get_group(m.group_code).enterprise_code != '0') {
+
+                                m['id'] = m.member_uid;
+                                m['pId'] = m.group_code;
+                                m['isParent'] = false;
+                                var headFile = eb_client_config.organize.member_icon;
+                                if (m['head_file'] && m['head_file'].length > 0) {
+                                    headFile = m['head_file'];
+                                }
+                                m['icon'] = headFile;
+                                m['name'] = m.user_name.length > 0 ? m.user_name : m.member_account;
+                                newNodes.push(m);
+
+                            }
+                        }
+                        eb_tree.addNodes(treeNode, newNodes, true);
+                        treeNode['expanded'] = true;
+                        expands[treeNode.id] = true;
+
+
+                        var nodeList = treeNode.children;
+
+                        $.each(nodeList, function(index, node) {
+                            $.eb_organize._set_iconcss(node);
+
+                        });
+
+                    });
+
+
+
+                },
+                /*  
+                 * 更新新组织架构在线状态信息
+                 * param eb_tree 组织架构树树 
+                 *
+                */
+                update_ent_ols: function(eb_tree){
+                    $.ebMsg.loadols({entgroup_ols: '1'}, function(result) {
+                        var group_nodes = eb_tree.getNodesByFilter(function(node){
+                            return node.emp_count && parseInt(node.emp_count) > 0 && node.isParent && (!node.isRoot)
+                        });
+                        group_nodes.forEach(function(node){
+                            node.name = node.group_name + " [0/" + node.emp_count + "]";
+                            eb_tree.updateNode(node);
+                        });
+                        var ols_list = result.group_ols;
+                        var nums = 0;
+                        ols_list.forEach(function(item){
+                            nums += parseInt(item.online_size);
+
+                            var gid = item.group_id;
+                            var node = eb_tree.getNodeByParam("id", gid, null);
+                            node.name = node.group_name + " [" + item.online_size + "/" + node.emp_count + "]";
+
+                            eb_tree.updateNode(node);
+
+
+                        });
+                        
+                        var root_node = eb_tree.getNodeByParam("id", '0',  null);
+                        root_node.name = root_node.group_name + " [" + nums + "/" + root_node.members + "]";
+                        eb_tree.updateNode(root_node);
+
+
+
+                    }, function(state) {
+                        layer.alert(state.msg);
+                    });
+                }
+                ,
+
+                init: function(id) {
+                    treeId = id;
+                    if (!cache.org.enterprise_info) {
+                        $(".xxim_latechat").hide();
+                        return;
+                    }
+                    var click_event = this._node_click;
+                    var expand_event = this._node_expand;
+
+                    function addDiyDom(treeId, treeNode) {
+                        var spaceWidth = 5;
+                        var switchObj = $("#" + treeNode.tId + "_switch"),
+                            icoObj = $("#" + treeNode.tId + "_ico");
+                        switchObj.remove();
+                        icoObj.before(switchObj);
+
+                        if (treeNode.level > 1) {
+                            var spaceStr = "<span style='display: inline-block;width:" + (spaceWidth * treeNode.level) + "px'></span>";
+                            switchObj.before(spaceStr);
+                        }
+                    }
+                    var setting = {
+                        data: {
+                            simpleData: {
+                                enable: true
+                            }
+                        },
+                        callback: {
+                            onClick: click_event,
+                            onExpand: expand_event
+                        },
+                        view: {
+                            showLine: false,
+                            showIcon: false,
+                            selectedMulti: false,
+                            dblClickExpand: false,
+                            addDiyDom: addDiyDom
+                        }
+                    };
+                    var init_data = this._init_data();
+
+                    $.fn.zTree.init($("#" + id), setting, init_data);
+                    var treeObj = $("#" + id);
+                    treeObj.addClass("showIcon")
+
+                    var eb_tree = $.fn.zTree.getZTreeObj(treeId);
+                    var root = eb_tree.getNodesByFilter(function(node) {
+                        return node.id == "0";
+                    }, true);
+                    var $button = $("#" + root.tId).find(".switch:first");
+                    //$button.removeClass("button");
+                    var $comImage = $("<img src='" + eb_client_config.organize.ent_icon + "' />");
+                    $comImage.css("width", "20px;");
+                    $comImage.css("height", "20px");
+
+                    $comImage.appendTo($button);
+                    this.update_ent_ols(eb_tree);
+
+
+
+
+                    
+
+
+
+
+                }
+
+
 
             }
-
-
-
-        }});
+        });
 
 
 
@@ -3068,6 +3130,8 @@
         $.ebMsg.eventHandle.onLineStateChange = function(data,type){
 
             $.eb_organize.reList(data);//组织架构在线状态
+            var eb_tree = $.fn.zTree.getZTreeObj("struct_list");
+            $.eb_organize.update_ent_ols(eb_tree);
 
             var gid = data.group_id;
             var uid = data.from_uid;
@@ -3175,8 +3239,6 @@
          * @param info
          */
         $.ebMsg.eventHandle.onEnterCall = function(callInfo,info){
-
-
 
 
             $.ebCache.chatid_list.push(callInfo.chat_id);

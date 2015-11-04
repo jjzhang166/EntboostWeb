@@ -1849,8 +1849,8 @@
 			var jDialog=$('<div class="xheDialog"></div>'),jContent=$(content),jSave=$('#xheSave',jContent);
 			if(jSave.length===1)
 			{
-				jContent.find('input[type=text],select').keypress(function(ev){if(ev.which===13){jSave.click();return false;}});
-				jContent.find('textarea').keydown(function(ev){if(ev.ctrlKey&&ev.which===13){jSave.click();return false;}});
+				//jContent.find('input[type=text],select').keypress(function(ev){if(ev.which===13){jSave.click();return false;}});
+				//jContent.find('textarea').keydown(function(ev){if(ev.ctrlKey&&ev.which===13){jSave.click();return false;}});
 				jSave.after(getLang(' <input type="button" id="xheCancel" value="{#dialogCancel}" />'));
 				$('#xheCancel',jContent).click(_this.hidePanel);
 				if(!settings.clickCancelDialog)
