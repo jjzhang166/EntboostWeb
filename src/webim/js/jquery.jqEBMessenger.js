@@ -495,7 +495,8 @@
                     TIMEOUT: 8000, //访问超时时间 (毫秒)
                     MAX_RELOGON_TIMES: 20, //最大重登次数限制
                     MAX_RELOADCHAT_TIMES: 200, //最大会话重连次数限制
-                    APP_ID: null,
+                    APP_ID: "278573612908",
+                    APP_PASSWORD:"b20eefef8e2dbc73ad71a1ec76213902",//app_key:ec1b9c69094db40d9ada80d657e08cc6
                     APP_OK: null,
                     CUS_ACCOUNT:"9009301111",
                     WEBIM_URL: "http://webim.entboost.com",
@@ -714,25 +715,27 @@
             "ebweblc.queryuser": 3,
             "ebwebum.userquery": 4,
             "ebwebum.online": 11,
-            "ebwebum.offline": 12,
+            "ebwebum.logout": 12,
             "ebwebum.callaccount": 13,
-            "ebwebum.hb": 14,
+            "ebwebum.holdconnect": 14,
             "ebwebum.loadcontact": 15,
             "ebwebum.loadorg": 16,
             "ebwebum.loadinfo": 17,
             "ebwebum.hangup": 18,
-            "ebwebcm.enter": 21,
-            "ebwebcm.exit": 22,
+            "ebwebcm.chatenter": 21,
+            "ebwebcm.chatexit": 22,
             "ebwebcm.sendtext": 23,
             "ebwebcm.sendrich": 24,
             "ebwebcm.sendfile": 25,
-            "ebwebcm.hb": 26,
+            "ebwebcm.holdconnect": 26,
             "ebwebum.callgroup":27,
             "ebwebcm.fileack": 28,
             "ebwebum.loadols": 29,
             "ebwebum.searchuser": 30,
             "ebwebum.sinfo":31,
-            "ebweblc.querysysinfo":32
+            "ebweblc.querysysinfo":32,
+            "ebwebum.logon":33,
+            "ebweblc.authappid":34
 
         };
 
@@ -888,6 +891,7 @@
         //state code对照表
         jqEBM.statecodeMap = {
             "EB_STATE_OK": 0,
+            "CR_WM_SENDING_FILE": 1,
             "EB_STATE_TIMEOUT_ERROR": 5,
             "EB_STATE_USER_BUSY": 8,
             "EB_STATE_UNAUTH_ERROR": 11,
@@ -915,9 +919,9 @@
         };
 
         //api版本号
-        jqEBM.API_VERSION = "02";
+        jqEBM.API_VERSION = "03";
         //静态资源版本号
-        jqEBM.STATIC_VERSION = "2014060601";
+        jqEBM.STATIC_VERSION = "2015060601";
         //跨域调用引擎回调前缀
         jqEBM.MESSAGE_CALLBACK_PREFIX = 'callback_';
         //聊天服务名称
@@ -1204,7 +1208,6 @@
 
             var iframe_name =jqEBM.fn.domainURI(url);
             //text_area_log('iframe_name:'+iframe_name);
-
             ifrMessenger.targets[iframe_name].send($.toJSON(jsonMsg));
         };
     })(jQuery, window);
@@ -1223,8 +1226,30 @@
         var EBLC =jqEBM.EBLC = {};
 
 
+        /**
+         * 验证app_id、app_key，返回app_ok,供后面的流程使用
+         *
+         */
+        EBLC.authappid = function(successCallback, failureCallback){
+            var parameter = {
+                app_id: jqEBM.options.APP_ID,
+                app_password: jqEBM.options.APP_PASSWORD
+            };
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebweblc.authappid"],
+                jqEBM.fn.createRestUrl(jqEBM.options.HTTP_PREFIX + jqEBM.options.DOMAIN_URL, jqEBM.API_VERSION, "ebweblc.authappid"),
+                $.toJSON(parameter),
+                true,
+                null,
+                function(state, param) {
 
+                    if(state == jqEBM.errCodeMap.OK) {
+                        if (successCallback) successCallback(param);
+                    } else {
+                        if (failureCallback) failureCallback(state);
+                    }
+                });
 
+        }
 
 
         /**
@@ -1373,14 +1398,58 @@
         var ifrMessenger = window.ifrMessenger;
         var jqEBM =$.jqEBMessenger;
         var EBUM =jqEBM.EBUM = {};
-        
+        var options = jqEBM.options;
 
+        EBUM.ebwebum_setlinestate = function(logon_type,successCallback,  failureCallback){
+            var parameter = {
+                acm_key: jqEBM.clientInfo.acm_key,
+                logon_type: logon_type,
+                user_id: jqEBM.clientInfo.my_uid,
+                user_online_key: jqEBM.clientInfo.my_um_online_key,
+                eb_sid: jqEBM.clientInfo.eb_sid
+            };
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.setlinestate"],
+                jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.setlinestate"),
+                $.toJSON(parameter),
+                true,
+                null,
+                function(state, param) {
+
+                    if(state == jqEBM.errCodeMap.OK) {
+                        if (successCallback) successCallback(param);
+                    } else {
+                        if (failureCallback) failureCallback(state);
+                    }
+                });
+        }
+
+        /**
+         * 登录
+         * @param parameter
+         * @param successCallback
+         * @param failureCallback
+         */
+        EBUM.ebwebum_logon = function(parameter, successCallback,  failureCallback){
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.logon"],
+                jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.logon"),
+                $.toJSON(parameter),
+                true,
+                null,
+                function(state, param) {
+
+                    if(state == jqEBM.errCodeMap.OK) {
+                        if (successCallback) successCallback(param);
+                    } else {
+                        if (failureCallback) failureCallback(state);
+                    }
+                });
+        }
 
         /**
          * 访问UM心跳动作
          *
          */
-        EBUM.ebwebum_hb = function () {
+        EBUM.ebwebum_holdconnect = function () {
 
             var key = jqEBM.UM_CONNECTMAP_KEY_PREFIX;
 
@@ -1388,11 +1457,11 @@
             if (!jqEBM.connectMap[key] || jqEBM.connectMap[key] === 0) {//限制全局只有一个um长连接
                 jqEBM.connectMap.increase(key);
                 var parameter = {
-                    uid: jqEBM.clientInfo.my_uid,
+                    user_id: jqEBM.clientInfo.my_uid,
                     eb_sid: jqEBM.clientInfo.eb_sid
                 };
-                ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.hb"],
-                    jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.hb"),
+                ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.holdconnect"],
+                    jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.holdconnect"),
                     $.toJSON(parameter),
                     true,
                     40000);//40秒超时
@@ -1407,7 +1476,7 @@
          */
         EBUM.ebwebum_loadcontact = function (successCallback, failureCallback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.eb_sid
             };
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadcontact"],
@@ -1431,7 +1500,7 @@
          */
         EBUM.ebwebum_loadinfo = function (callback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.eb_sid
             };
 
@@ -1453,7 +1522,7 @@
             if(!parameter){
                 parameter = {};
             }
-            parameter.uid = jqEBM.clientInfo.my_uid;
+            parameter.user_id = jqEBM.clientInfo.my_uid;
             parameter.eb_sid =  jqEBM.clientInfo.eb_sid
 
 
@@ -1474,7 +1543,7 @@
 
         EBUM.user_query = function(account,successCallback,failureCallback){
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 query_account: account,
                 eb_sid: jqEBM.clientInfo.eb_sid
 
@@ -1505,8 +1574,8 @@
          */
         EBUM.ebwebum_callgroup = function(gid, call_key , callback){
             var parameter = {
-                group_code:gid,
-                uid: jqEBM.clientInfo.my_uid,
+                group_id:gid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.eb_sid
             };
             if(call_key){
@@ -1531,7 +1600,7 @@
          */
         EBUM.ebwebum_callaccount = function (to_account, exist_call_id, call_key, callback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 to_account: to_account,
                 eb_sid: jqEBM.clientInfo.eb_sid
             };
@@ -1555,13 +1624,13 @@
          * 登记下线
          * @param callback {function} 回调函数
          */
-        EBUM.ebwebum_offline = function (callback) {
+        EBUM.ebwebum_logout = function (callback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.eb_sid
             };
-            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.offline"],
-                jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.offline"),
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.logout"],
+                jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.logout"),
                 $.toJSON(parameter),
                 true,
                 null,
@@ -1575,7 +1644,7 @@
          */
         EBUM.ebwebum_online = function (line_state, successCallback, failureCallback) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 logon_type: jqEBM.clientInfo.logon_type,
                 //account: jqEBM.clientInfo.my_account,
                 online_key: jqEBM.clientInfo.my_um_online_key,
@@ -1605,7 +1674,7 @@
          */
         EBUM.ebwebum_hangup = function (call_id, hangup) {
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 call_id: call_id,
                 hangup: (hangup ? 1 : 0),
                 eb_sid: jqEBM.clientInfo.eb_sid
@@ -1621,7 +1690,7 @@
          */
         EBUM.ebwebum_loadols = function(params,successCallback,failureCallback){
             var parameter = {
-                uid:jqEBM.clientInfo.my_uid,
+                user_id:jqEBM.clientInfo.my_uid,
                 // group_code:gid,
                 eb_sid: jqEBM.clientInfo.eb_sid
 
@@ -1631,7 +1700,7 @@
                     parameter[key] = params[key];
                 }
             }
-            
+
             ifrMessenger.sendMessage(jqEBM.apiMap["ebwebum.loadols"],
                 jqEBM.fn.createRestUrl(jqEBM.clientInfo.um_url, jqEBM.API_VERSION, "ebwebum.loadols"),
                 $.toJSON(parameter),
@@ -1654,8 +1723,8 @@
          */
         EBUM.ebwebum_searchuser = function(search_key, successCallback,failureCallback){
             var parameter = {
-                uid: jqEBM.clientInfo.my_uid,
-                "search-key":search_key,
+                user_id: jqEBM.clientInfo.my_uid,
+                "search_key":search_key,
                 eb_sid: jqEBM.clientInfo.eb_sid
 
             }
@@ -1680,7 +1749,7 @@
          * @param failureCallback
          */
         EBUM.ebwebum_sinfo = function(parameter,successCallback , failureCallback){
-            parameter.uid = jqEBM.clientInfo.my_uid;
+            parameter.user_id = jqEBM.clientInfo.my_uid;
 
 
             parameter.eb_sid = jqEBM.clientInfo.eb_sid;
@@ -1717,27 +1786,44 @@
 
         var fn =jqEBM.fn;
 
+
+
+        EBCM.ebwebcm_msgack = function(cm_url,chat_id, msg_id, ack_type){
+            var parameter = {
+                chat_id: chat_id,
+                msg_id: msg_id,
+                ack_type:ack_type,
+                eb_sid: jqEBM.clientInfo.eb_sid,
+                user_id: jqEBM.clientInfo.my_uid
+            };
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.msgack"],
+                jqEBM.fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.msgack"),
+                $.toJSON(parameter));
+        }
+
         /**
          * 访问CM心跳动作
          * @param cm_url CM {string} http访问地址
          * @param from_uid {string} 用户id
          */
-        EBCM.ebwebcm_hb = function (cm_url, from_uid) {
-            var key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.hb");
-          
+        EBCM.ebwebcm_holdconnect = function (cm_url, from_uid) {
+            var key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.holdconnect");
+
             text_area_log("connectMap[" + key + "]=" + jqEBM.connectMap[key]);
             text_area_log("jqEBM.connectMap:" + JSON.stringify(jqEBM.connectMap));
 
-            if (!jqEBM.connectMap[key] || jqEBM.connectMap[key] === 0) {//限制一个服务只有一个um长连接
+            if (!jqEBM.connectMap[key] || jqEBM.connectMap[key] === 0) {//限制一个服务只有一个cm长连接
 
                 jqEBM.connectMap.increase(key);
-
+                if(!from_uid){
+                    from_uid = jqEBM.clientInfo.my_uid;
+                }
                 var parameter = {
-                    from_uid: from_uid,
+                    user_id: from_uid,
                     eb_sid: jqEBM.clientInfo.cm_sids[cm_url]
                 };
-                ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.hb"]
-                    , jqEBM.fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.hb")
+                ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.holdconnect"]
+                    , jqEBM.fn.createRestUrl(cm_url, jqEBM.API_VERSION, "ebwebcm.holdconnect")
                     , $.toJSON(parameter)
                     , true
                     , 40000);//40秒超时
@@ -1749,15 +1835,15 @@
         /**
          * 发送富文本消息
          * @param call_id  {string} 会话编号
-         * @param from_uid {int} 消息发送方uid
-         * @param to_uid {int} 对方uid；(群组会话时)指定和某一人对话(注意这里并不表示私聊)，空值表示和全部人说话
+         * @param user_id {int} 消息发送方uid
+         * @param to_user_id {int} 对方uid；(群组会话时)指定和某一人对话(注意这里并不表示私聊)，空值表示和全部人说话
          * @param isPrivate {boolean} 是否私聊
          * @param rich_info {string} json格式的富文本消息
          * @param successCallback {function} 发送成功回调函数
          * @param failureCallback {function} 发送失败回调函数
          * @returns {string} 执行状态
          */
-        EBCM.ebwebcm_sendrich = function (callInfo, from_uid, to_uid, isPrivate, rich_info, successCallback, failureCallback) {
+        EBCM.ebwebcm_sendrich = function (callInfo, user_id, to_user_id, isPrivate, rich_info, successCallback, failureCallback) {
             var parameterStr = [
                 '{',
                 '"chat_id":',
@@ -1770,11 +1856,11 @@
                 jqEBM.clientInfo.cm_sids[callInfo.cm_url],
                 '"'
             ].join("");
-            if (to_uid) {
-                parameterStr = parameterStr + ', "to_uid":' + to_uid;
+            if (to_user_id) {
+                parameterStr = parameterStr + ', "to_user_id":' + to_user_id;
             }
-            if(from_uid){
-                parameterStr = parameterStr + ', "from_uid":' + from_uid;
+            if(user_id){
+                parameterStr = parameterStr + ', "user_id":' + user_id;
             }
 
             parameterStr = parameterStr + "}";
@@ -1811,30 +1897,37 @@
          * 进入聊天会话
          * @param call_id {string} 会话编号
          */
-        EBCM.ebwebcm_enter = function (call_id) {
+        EBCM.ebwebcm_chatenter = function (call_id) {
             //		text_area_log('ebwebcm_enter call_id='+call_id);
             if (!call_id) {
-                text_area_log("ebwebcm_enter call_id is null");
+                text_area_log("ebwebcm_chatenter call_id is null");
                 return;
             }
 
             //通过call_id在本地查找call_info信息
             var callInfo = jqEBM.chatMap[call_id];
             if (!callInfo) {
-                text_area_log("ebwebcm_enter not found callInfo for call_id=" + call_id);
+                text_area_log("ebwebcm_chatenter not found callInfo for call_id=" + call_id);
                 return;
             }
-            text_area_log('ebwebcm_enter==>callInfo:\n' + $.toJSON(callInfo));
+            text_area_log('ebwebcm_chatenter==>callInfo:\n' + $.toJSON(callInfo));
 
             //填充参数值
+            // var parameter = {
+            //     logon_type: jqEBM.clientInfo.logon_type,
+            //     from_uid: jqEBM.clientInfo.my_uid,
+            //     chat_id: callInfo.chat_id,
+            //     chat_key: callInfo.chat_key,
+            //     call_id: callInfo.call_id,
+            //     appname: callInfo.cm_appname
+            // };
             var parameter = {
+                eb_sid: jqEBM.clientInfo.eb_sid,
                 logon_type: jqEBM.clientInfo.logon_type,
-                from_uid: jqEBM.clientInfo.my_uid,
-//			account: jqEBM.clientInfo.my_account,
-                chat_id: callInfo.chat_id,
+                user_id: jqEBM.clientInfo.my_uid,
                 chat_key: callInfo.chat_key,
-                call_id: callInfo.call_id,
-                appname: callInfo.cm_appname
+                chat_id: callInfo.call_id
+
             };
             if(jqEBM.clientInfo.cm_sids[callInfo.cm_url]){
                 parameter.eb_sid = jqEBM.clientInfo.cm_sids[callInfo.cm_url];
@@ -1851,8 +1944,8 @@
                 parameter.group_code = callInfo.group_code;
             }
 
-            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.enter"],
-                jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.enter"),
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.chatenter"],
+                jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.chatenter"),
                 $.toJSON(parameter));
         };
 
@@ -1861,9 +1954,9 @@
          * @param from_uid {int} 用户id 新增参数(2015-04-07)
          * @param call_id {int} 会话编号
          */
-        EBCM.ebwebcm_exit = function (call_id) {
+        EBCM.ebwebcm_chatexit = function (call_id) {
             if (!call_id) {
-                text_area_log("ebwebcm_exit call_id is 0");
+                text_area_log("ebwebcm_chatexit call_id is 0");
                 return;
             }
 
@@ -1881,11 +1974,11 @@
 
             var parameter = {
                 chat_id: callInfo.chat_id,
-                from_uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
             };
-            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.exit"],
-                jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.exit"),
+            ifrMessenger.sendMessage(jqEBM.apiMap["ebwebcm.chatexit"],
+                jqEBM.fn.createRestUrl(callInfo.cm_url, jqEBM.API_VERSION, "ebwebcm.chatexit"),
                 $.toJSON(parameter));
         };
 
@@ -1910,7 +2003,7 @@
             }
 
             var parameter = {
-                from_uid: from_uid,
+                user_id: from_uid,
                 chat_id: chat_id,
                 apply: 1,
                 eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
@@ -1941,7 +2034,7 @@
                 chat_id: chat_id,
                 msg_id: msg_id,
                 ack_type: ack_type,
-                from_uid: jqEBM.clientInfo.my_uid,
+                user_id: jqEBM.clientInfo.my_uid,
                 eb_sid: jqEBM.clientInfo.cm_sids[callInfo.cm_url]
             };
 
@@ -1981,11 +2074,11 @@
             ///后续处理，清理会话、退出到登录界面等
             jqEBM.clientInfo.tickoff =true;
 
-            if(jqEBM.msgcodeMap['EB_WM_ONLINE_ANOTHER_CM'] == jsonData.msg) {//EB_WM_ONLINE_ANOTHER_CM
+            if(jqEBM.msgcodeMap['EB_WM_ONLINE_ANOTHER_CM'] == jsonData.notification_type) {//EB_WM_ONLINE_ANOTHER_CM
                 //var pv =$.evalJSON(req.pv);
                 var callInfo =jqEBM.chatMap.callInfoByChatId(jsonData.chat_id);
-                jqEBM.EBCM.ebwebcm_exit(callInfo.call_id);
-            } else if(jqEBM.msgcodeMap['EB_WM_ONLINE_ANOTHER_UM'] == jsonData.msg) {//EB_WM_ONLINE_ANOTHER_UM
+                jqEBM.EBCM.ebwebcm_chatexit(callInfo.call_id);
+            } else if(jqEBM.msgcodeMap['EB_WM_ONLINE_ANOTHER_UM'] == jsonData.notification_type) {//EB_WM_ONLINE_ANOTHER_UM
                 jqEBM.clientInfo.line_state =0;
 
                 var list =jqEBM.chatMap.names();
@@ -1993,7 +2086,7 @@
                     for(var i=0;i <list.length; i++) {
                         var call_info =jqEBM.chatMap[list[i]];
                         if(call_info)
-                            jqEBM.EBCM.ebwebcm_exit(call_info.call_id);
+                            jqEBM.EBCM.ebwebcm_chatexit(call_info.call_id);
                     }
             }
 
@@ -2007,21 +2100,21 @@
         processor.processCallConnected = function (req, data) {
             //处理旧会话信息
             jqEBM.changeCallId(req, data);
-
             //新返回的call_info数据
             var callConnect_info =data.call_info;
-            var cm_url = callConnect_info.url;
+            var cm_url = "http://" + callConnect_info.chat_server;
             if($.ebMsg.options.HTTP_PREFIX.indexOf("https:") != -1){//判断是否为https链接
-                cm_url = callConnect_info.urls;
+                cm_url =  "https://" +callConnect_info.chat_server;
             }
 
             //创建或更新会话信息
             var call_info =jqEBM.mergeCallInfo(callConnect_info.call_id,
-                    callConnect_info.group_code,
-                    callConnect_info.from_uid,
+                    callConnect_info.group_id,
+                    callConnect_info.from_user_id,
                     callConnect_info.from_account,
                     callConnect_info.from_info,
-                    jqEBM.options.HTTP_PREFIX + cm_url,
+                    //jqEBM.options.HTTP_PREFIX + cm_url,
+                    cm_url,
                     callConnect_info.appname,
                     callConnect_info.chat_id,
                     callConnect_info.chat_key,
@@ -2034,7 +2127,7 @@
             jqEBM.fn.load_iframe(call_info.cm_url+ jqEBM.options.WEBIM_PLUGIN +'/iframe_domain.html?fr_name=' + jqEBM.fn.domainURI(call_info.cm_url) + (jqEBM.options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION,
                 try_times,
                 function(){
-                    jqEBM.EBCM.ebwebcm_enter(call_info.call_id);
+                    jqEBM.EBCM.ebwebcm_chatenter(call_info.call_id);
                 });
         };
 
@@ -2053,9 +2146,9 @@
             var pv =$.evalJSON(req.pv);
 
             //创建或更新会话信息
-            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_code, new_call_info.from_uid, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
+            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_id, new_call_info.from_user_id, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
 
-            jqEBM.updateAccountIncall(new_call_info.call_id, new_call_info.from_uid, false);
+            jqEBM.updateAccountIncall(new_call_info.call_id, new_call_info.from_user_id, false);
         };
 
         /**
@@ -2073,12 +2166,12 @@
             var pv =$.evalJSON(req.pv);
 
             //创建或更新会话信息
-            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_code, new_call_info.from_uid, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
+            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_id, new_call_info.from_user_id, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
 
-            jqEBM.updateAccountIncall(new_call_info.call_id, new_call_info.from_uid, false);
+            jqEBM.updateAccountIncall(new_call_info.call_id, new_call_info.from_user_id, false);
 
 //            showSurface(new_call_info.call_id
-//                    ,new_call_info.from_uid
+//                    ,new_call_info.from_user_id
 //                    ,new_call_info.from_account
 //                    ,"未知"
 //                    ,"对方不在位置");
@@ -2099,7 +2192,7 @@
             var pv =$.evalJSON(req.pv);
 
             //创建或更新会话信息
-            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_code, new_call_info.from_uid, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
+            jqEBM.mergeCallInfo(new_call_info.call_id, new_call_info.group_id, new_call_info.from_user_id, new_call_info.from_account, new_call_info.from_info, null, null, null, null, null, pv.call_key);
 
         };
 
@@ -2112,10 +2205,10 @@
             //var pv =$.evalJSON(req.pv);
             var call_info =jqEBM.chatMap.callInfoByChatId(data.chat_id);
 
-            jqEBM.updateAccountIncall(call_info.call_id, data.from_uid, true);
+            jqEBM.updateAccountIncall(call_info.call_id, data.from_user_id, true);
 
 //            if(jqEBM.eventHandle) {
-//                jqEBM.eventHandle.onTalkReady(call_info, jqEBM.accountInfoMap[data.from_uid]);
+//                jqEBM.eventHandle.onTalkReady(call_info, jqEBM.accountInfoMap[data.from_user_id]);
 //            }
         };
 
@@ -2137,7 +2230,7 @@
         processor.processUserCMExit = function (req ,data) {
             //var pv =$.evalJSON(req.pv);
             var call_info = jqEBM.chatMap.callInfoByChatId(data.chat_id);
-            jqEBM.updateAccountIncall(call_info.call_id, data.from_uid, false);
+            jqEBM.updateAccountIncall(call_info.call_id, data.from_user_id, false);
         };
 
         //loadorg
@@ -2211,6 +2304,13 @@
             }
             delete jqEBM.uploadAttachmentMap[data.batch_number];
 
+            if(jqEBM.statecodeMap["CR_WM_SENDING_FILE"] == data.code) {
+//                if(jqEBM.eventHandle)
+//                    jqEBM.eventHandle.onSendingFile(jqEBM.errCodeMap.UPLOAD_FILE_EMPTY, call_info.call_id, fileName, null, null);
+                if(batchObj.sendingCallback)
+                    batchObj.sendingCallback(jqEBM.errCodeMap.FILE_UPLOAD_FAIL, call_info.call_id, batchObj.fileName);
+                return;
+            }
             //fire 文件上传失败事件
             if(jqEBM.statecodeMap["EB_STATE_PARAMETER_ERROR"] == data.code && data.error == "upload file empty error") {
 //                if(jqEBM.eventHandle)
@@ -2249,11 +2349,11 @@
          */
         processor.processSentFile = function (req, data) {
             //自己的事件忽略处理
-            if(data.from_uid == jqEBM.clientInfo.my_uid)
+            if(data.from_user_id == jqEBM.clientInfo.my_uid)
                 return;
 
             //忽略无用事件
-            if(data.from_uid == "0")
+            if(data.from_user_id == "0")
                 return;
 
             //fire 对方接收文件成功事件
@@ -2288,6 +2388,8 @@
 //                jqEBM.eventHandle.onSentFile(jqEBM.errCodeMap.UPLOAD_FILE_REJECT, call_info.call_id, fileName);
             if(batchObj && batchObj.sentCallback) {
                 batchObj.sentCallback(jqEBM.errCodeMap.UPLOAD_FILE_REJECT, call_info.call_id, batchObj.fileName);
+            }else{
+                jqEBM.eventHandle.onCancelSend(data);
             }
 
             delete jqEBM.uploadAttachmentMap[data.msg_id];
@@ -2815,7 +2917,7 @@
         /**
          * 更新本地callInfo信息
          * @param call_id {string} 会话编号
-         * @param group_code {int} 群组/部门编号
+         * @param group_id {int} 群组/部门编号
          * @param uid {string} 用户ID
          * @param from_account {string} 群组/部门中成员邮箱账号
          * @param from_info {string} 电子名片
@@ -2826,7 +2928,7 @@
          * @param offlineString 成员是否离线(与from_acount一起使用)
          * @param call_key 呼叫来源KEY实现企业被呼叫限制
          */
-        jqEBM.mergeCallInfo = function (call_id, group_code, uid, from_account, from_info, cm_url, cm_appname, chat_id, chat_key, offlineString, call_key) {
+        jqEBM.mergeCallInfo = function (call_id, group_id, uid, from_account, from_info, cm_url, cm_appname, chat_id, chat_key, offlineString, call_key) {
             if (!call_id) {
                 text_area_log("mergeCallInfo call_id is null");
                 return null;
@@ -2841,8 +2943,8 @@
                 text_area_log("mergeCallInfo create new callInfo for call_id:" + call_id);
             }
 
-            if (group_code)
-                callInfo.group_code = group_code;
+            if (group_id)
+                callInfo.group_id = group_id;
 
             if (uid) {
                 var account = callInfo.accounts[uid];
@@ -2925,7 +3027,7 @@
             }
 
             if (cm_url)
-                
+
                 callInfo.cm_url = cm_url;
 
             if (cm_appname)
@@ -3022,13 +3124,13 @@
 
             var exist_call_id =null;
             if(jqEBM.msgcodeMap['EB_WM_CALL_CONNECTED'] == data.msg) {//call_connected
-                text_area_log("changeCallId call_connected group_code="+new_call_info.group_code+", oc_id="+new_call_info.oc_id+", new_call_id="+new_call_info.call_id);
+                text_area_log("changeCallId call_connected group_id="+new_call_info.group_id+", oc_id="+new_call_info.oc_id+", new_call_id="+new_call_info.call_id);
 
                 if(new_call_info.oc_id != "0" && new_call_info.oc_id != new_call_id) {
                     exist_call_id =new_call_info.oc_id;
                 }
             } else {//call_alerting
-                text_area_log("changeCallId call_alert group_code=" + new_call_info.group_code + ", exist_call_id="+pv.exist_call_id+", new_call_id="+new_call_info.call_id);
+                text_area_log("changeCallId call_alert group_id=" + new_call_info.group_id + ", exist_call_id="+pv.exist_call_id+", new_call_id="+new_call_info.call_id);
 
                 exist_call_id =pv.exist_call_id;
             }
@@ -3038,7 +3140,7 @@
             //一对一会话call_id变更
             if(exist_call_id && exist_call_id.length>0//原来已有call_id，二次以上call
                 && exist_call_id!=new_call_id//原有call_id与返回的call_id不相同
-                && new_call_info.group_code == "0"//非群组会话
+                && new_call_info.group_id == "0"//非群组会话
                 ) {
                 text_area_log("call_id变更，exist_call_id="+exist_call_id+", new_call_id="+ new_call_id);
 
@@ -3065,6 +3167,7 @@
                 try_times,
                 function () {
                     jqEBM.EBUM.ebwebum_online(5, callback);
+                    
                 });
         };
 
@@ -3086,25 +3189,27 @@
                         type: "text",
                         content: richInfo[i].text
                     };
-                }  else if(richInfo[i].img) {//截图
-                    src = ((richInfo[i].url.indexOf("http")===0)?"":"http://") + richInfo[i].url + "/servlet.ebwebcm.res?file=" + richInfo[i].img;
+                }  else if(richInfo[i].image_url) {//截图
+                    //src = ((richInfo[i].url.indexOf("http")===0)?"":"http://") + richInfo[i].url + "/servlet.ebwebcm.res?file=" + richInfo[i].image_url;
                     entity = {
                         type: "screenshot",
-                        content: src
+                        //content: src
+                        content: richInfo[i].image_url
                     };
                 }
                 else if(richInfo[i].resid) {//表情
-                    src = [
-                        "http://",
-                        richInfo[i].url,
-                        "/servlet.ebwebcm.res?resid=",
-                        richInfo[i].resid
-                    ].join("");
+                    //src = [
+                    //    "http://",
+                    //    richInfo[i].url,
+                    //    "/servlet.ebwebcm.res?resid=",
+                    //    richInfo[i].resid
+                    //].join("");
                     entity = {
                         type: "emotion",
-                        content: src,
-                        resid:richInfo[i].resid,
-                        server:richInfo[i].cm_server,
+                        //content: src,
+                        content: richInfo[i].image_url,
+                        //resid:richInfo[i].resid,
+                        //server:richInfo[i].cm_server,
                         desc:richInfo[i].desc
                     };
                 }
@@ -3166,7 +3271,7 @@
             };
 
             $.ajaxFU.ajaxFileUpload({
-                url: url + "?chat_id=" + chat_id  + "&from_uid=" + from_uid + "&batch_number=" + batch_number + "&eb_sid=" + eb_sid, //你处理上传文件的服务端
+                url: url + "?chat_id=" + chat_id  + "&user_id=" + from_uid + "&batch_number=" + batch_number + "&eb_sid=" + eb_sid, //你处理上传文件的服务端
                 secureuri: secureuri,
                 fileElementId: fileElementId,
                 dataType: 'json',
@@ -3337,16 +3442,20 @@
             UPLOAD_FILE_EMPTY: {code:32, msg:"没有指定上传文件"},
             UPLOAD_FILE_REJECT: {code:33, msg:"对方取消或拒绝接收文件"},
             LOADCONTACT_FAILURE:{code:34, msg:"加载联系人失败"},
+            FILE_UPLOAD_FAIL: {code:35, msg:"文件上传失败"},
             //code=10000以上，自定义错误信息
             "ACK_FILE_FAILURE": {code:10000,msg:"文件ack错误"},
             "LOAD_OLS_FAILURE": {code:10001,msg:"用户状态加载失败!"},
             "SINFO_FAILURE": {code:10002,msg:"修改资料失败!"},
-            "RESET_PWD_FAILURE": {code:10003, msg:"重置密码失败!"}
+            "RESET_PWD_FAILURE": {code:10003, msg:"重置密码失败!"},
+            "AUTHAPPID_FAILURE": {code:10004, msg:"验证失败"}
         };
 
         $.ebMsg.eventHandle = $.jqEBMessenger.eventHandle =function() {
             function EventHandle() {
             }
+            //服务端有消息返回时
+            EventHandle.prototype.onReceiveData = function(type ,data){};
 
             //表情资源加载完毕
             EventHandle.prototype.onLoadEmotions = function(emotions) {};
@@ -3362,6 +3471,10 @@
 
             //接收到文件
             EventHandle.prototype.onReceiveFile = function(callInfo, from_uid, file_info){};
+
+            //取消发送文件
+            EventHandle.prototype.onCancelSend = function(data){};
+
 
             //发送文件事件
             EventHandle.prototype.onReceivingFile = function(callInfo, from_uid, file_info){};
@@ -3427,7 +3540,8 @@
 
         processor.processNetworkError = function (req) {
             switch (req.api) {
-                case apiMap["ebwebum.hb"]:
+
+                case apiMap["ebwebum.holdconnect"]:
                     //当前心跳连接计数减少1
 
                     var um_key = jqEBM.UM_CONNECTMAP_KEY_PREFIX;
@@ -3439,12 +3553,12 @@
 
                     if (clientInfo.line_state != String(0)) {
 
-                        setTimeout("$.jqEBMessenger.EBUM.ebwebum_hb()", 2000);
+                        setTimeout("$.jqEBMessenger.EBUM.ebwebum_holdconnect()", 2000);
                     }
                     break;
-                case apiMap["ebwebcm.hb"]:
+                case apiMap["ebwebcm.holdconnect"]:
                     //当前心跳连接计数减少1
-                    var cm_key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.hb");
+                    var cm_key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.holdconnect");
 
                     if (connectMap[cm_key] && connectMap[cm_key] > 0) {
                         connectMap.reduce(cm_key);
@@ -3456,13 +3570,13 @@
                         req.pv = $.Base64.decode(req.pv);
                         req.pv = $.evalJSON(req.pv);
 
-                        setTimeout("$.jqEBMessenger.EBCM.ebwebcm_hb('" + req.url.split('/rest')[0] + "','" + jqEBM.clientInfo.my_uid + "')", 2000);
+                        setTimeout("$.jqEBMessenger.EBCM.ebwebcm_holdconnect('" + req.url.split('/rest')[0] + "','" + jqEBM.clientInfo.my_uid + "')", 2000);
 
-                        text_area_log("processNetworkError,  ebwebcm.hb error for from_uid =" + req.pv.from_uid +",reconnect soon!");
+                        text_area_log("processNetworkError,  ebwebcm.holdconnect error for from_user_id =" + req.pv.from_user_id +",reconnect soon!");
 
 //                        var call_info = chatMap.callInfoByChatId(req.pv.chat_id);
 //                        if (call_info) {
-//                            setTimeout("$.jqEBMessenger.EBCM.ebwebcm_hb('" + call_info.cm_url + "','" + jqEBM.clientInfo.my_uid + "')", 2000);
+//                            setTimeout("$.jqEBMessenger.EBCM.ebwebcm_holdconnect('" + call_info.cm_url + "','" + jqEBM.clientInfo.my_uid + "')", 2000);
 //                        }
 //                        else {
 //
@@ -3497,14 +3611,30 @@
             var eventHandle = jqEBM.eventHandle;
             var errCodeMap = $.jqEBMessenger.errCodeMap;
             var callback =jqEBM.hashMap[jqEBM.MESSAGE_CALLBACK_PREFIX + req.tag];
+            eventHandle.onReceiveData(req.api, jsonData);
 
             switch (req.api) {
+                case apiMap['ebweblc.authappid']:
+
+                    if(jsonData.code != statecodeMap["EB_STATE_OK"]){
+                        text_area_log(jsonData.error);
+                        if(callback)
+                            callback(errCodeMap.AUTHAPPID_FAILURE);
+
+                        break;
+                    }
+                    clientInfo.um_url = jqEBM.options.HTTP_PREFIX + jsonData.server_list[0]['server'];
+                    callback(errCodeMap.OK, jsonData);
+
+
+
+                    break;
                 case apiMap['ebweblc.queryuser']:
 
                     if(jsonData.code != statecodeMap["EB_STATE_OK"]){
                         text_area_log(jsonData.error);
                         if(callback)
-                            callback(errCodeMap.QUERYUSER_FAILURE);
+                            callback(errCodeMap.EBUM_LOGON_FAILURE);
 
                         break;
                     }
@@ -3522,6 +3652,58 @@
                     }
 
                     callback(errCodeMap.OK, jsonData);
+                    break;
+                case apiMap["ebwebum.logon"]:
+                    if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
+                        text_area_log(jsonData.error);
+                        if(callback)
+                            callback(errCodeMap.LOGON_FAILURE);
+
+                        //处理code=60,待补充
+                        break;
+                    }
+                    clientInfo.logon_type = jsonData.logon_type;
+
+                    //clientInfo.um_url = options.HTTP_PREFIX + jsonData.logon_url;
+                    //if($.ebMsg.options.HTTP_PREFIX.indexOf("https:") != -1){
+                    //    clientInfo.um_url = options.HTTP_PREFIX + jsonData.logon_urls;
+                    //}
+                    clientInfo.um_appname = jsonData.appname;//待确定
+                    clientInfo.my_account = jsonData.account;
+                    clientInfo.my_uid = jsonData.user_id;
+                    clientInfo.my_um_online_key = jsonData.user_online_key;
+                    clientInfo.acm_key = jsonData.acm_key;
+                    clientInfo.username = jsonData.user_name;
+                    clientInfo.description = jsonData.description;
+                    clientInfo.setting = jsonData.user_setting;
+                    clientInfo.default_member_code = jsonData.default_member_code;
+                    clientInfo.eb_sid = jsonData.eb_sid;
+
+
+                    clientInfo.gender = jsonData.gender;
+                    clientInfo.birthday = jsonData.birthday;
+                    clientInfo.tel = jsonData.tel;
+                    clientInfo.mobile = jsonData.mobile;
+                    clientInfo.email = jsonData.email;
+                    clientInfo.user_url = jsonData.user_url;
+                    clientInfo.add = jsonData.address;
+                    clientInfo.zipcode = jsonData.zip_code;
+                    clientInfo.area1 = jsonData.area1_code;
+                    clientInfo.area2 = jsonData.area2_code;
+                    clientInfo.area3 = jsonData.area3_code;
+                    clientInfo.area4 = jsonData.area4_code;
+                    clientInfo.area1s = jsonData.area1_name;
+                    clientInfo.area2s = jsonData.area2_name;
+                    clientInfo.area3s = jsonData.area3_name;
+                    clientInfo.area4s = jsonData.area4_name;
+                    pv = $.evalJSON(req.pv);
+                    clientInfo.line_state = pv.line_state;;
+
+
+
+                    //EBUM.ebwebum_setlinestate(jsonData.logon_type);
+                    EBUM.ebwebum_holdconnect();
+                    callback(errCodeMap.OK, clientInfo);
                     break;
                 case apiMap["ebwebum.userquery"]:
                     if(jsonData.code != statecodeMap["EB_STATE_OK"]){
@@ -3545,10 +3727,10 @@
                     }
                     clientInfo.user_type = 'visitor';
                     clientInfo.logon_type = jsonData.logon_type;
-                    clientInfo.um_url = options.HTTP_PREFIX + jsonData.url;
+                    clientInfo.um_url = options.HTTP_PREFIX + jsonData.logon_url;
                     clientInfo.um_appname = jsonData.appname;
                     clientInfo.my_account = jsonData.account;
-                    clientInfo.my_uid = jsonData.uid;
+                    clientInfo.my_uid = jsonData.user_id;
                     clientInfo.my_um_online_key = jsonData.online_key;
                     clientInfo.acm_key = jsonData.acm_key;
                     clientInfo.username = jsonData.username;
@@ -3619,29 +3801,29 @@
                         break;
                     }
 
-                    callback(errCodeMap.OK, jsonData);
+                    //callback(errCodeMap.OK, jsonData);
                     break;
-                case apiMap["ebwebum.online"]:
-                    if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
-                        text_area_log(jsonData.error);
-                        if(callback)
-                            callback(errCodeMap.ONLINE_FAILURE);
-                        break;
-                    }
+//                case apiMap["ebwebum.online"]:
+//                    if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
+//                        text_area_log(jsonData.error);
+//                        if(callback)
+//                            callback(errCodeMap.ONLINE_FAILURE);
+//                        break;
+//                    }
+//
+//                    pv = $.evalJSON(req.pv);
+//
+//                    if (msgcodeMap['EB_WM_LOGON_SUCCESS'] == jsonData.notification_type) {
+//                        clientInfo.line_state = pv.line_state;
+//                        clientInfo.eb_sid = jsonData.eb_sid;
+//                        callback(errCodeMap.OK, jsonData);
+////                        EBUM.ebwebum_loadorg(callback);
+//                        //um心跳
+//                        EBUM.ebwebum_holdconnect();
+//                    }
+//                    break;
 
-                    pv = $.evalJSON(req.pv);
-
-                    if (msgcodeMap['EB_WM_LOGON_SUCCESS'] == jsonData.msg) {
-                        clientInfo.line_state = pv.line_state;
-                        clientInfo.eb_sid = jsonData.eb_sid;
-                        callback(errCodeMap.OK, jsonData);
-//                        EBUM.ebwebum_loadorg(callback);
-                        //um心跳
-                        EBUM.ebwebum_hb();
-                    }
-                    break;
-
-                case apiMap["ebwebum.offline"]:
+                case apiMap["ebwebum.logout"]:
                     if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
                         text_area_log(jsonData.error);
 
@@ -3651,7 +3833,8 @@
                         break;
                     }
 
-                    if (msgcodeMap['EB_WM_LOGOUT'] == jsonData.msg) {
+                    if (msgcodeMap['EB_WM_LOGOUT'] == jsonData.notification_type) {
+                        
                         text_area_log("下线成功");
                         clientInfo.line_state =0;
                         //重置属性
@@ -3700,15 +3883,15 @@
 
                     //缓存当次回调函数
 
-                    caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_uid;
+                    caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_user_id;
 
                     text_area_log("call account caKey = " + caKey);
                     jqEBM.callAccountHandleMap[caKey] = callback;
 
                     //对方正在被呼叫状态设置为否
-                    jqEBM.updateAccountBecalling(jsonData.call_info.call_id, jsonData.call_info.from_uid, false);
+                    jqEBM.updateAccountBecalling(jsonData.call_info.call_id, jsonData.call_info.from_user_id, false);
 
-                    if (msgcodeMap['EB_WM_CALL_CONNECTED'] == jsonData.msg) {
+                    if (msgcodeMap['EB_WM_CALL_CONNECTED'] == jsonData.notification_type) {
                         this.processCallAlerting(req, jsonData);
 
                         processor.processCallConnected(req, jsonData);
@@ -3717,7 +3900,6 @@
                     }
                     break;
                 case apiMap["ebwebum.callaccount"]:
-
                     if (jsonData.code == statecodeMap["EB_STATE_TIMEOUT_ERROR"]) {//timeout
                         //待定处理
                         //后台正常情况下不会出现
@@ -3756,13 +3938,13 @@
 
                     //缓存当次回调函数
 
-                    caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_uid;
+                    caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_user_id;
 
                     text_area_log("call account caKey = " + caKey);
                     jqEBM.callAccountHandleMap[caKey] = callback;
                     //对方正在被呼叫状态设置为否
-                    jqEBM.updateAccountBecalling(jsonData.call_info.call_id, jsonData.call_info.from_uid, false);
-                    if (msgcodeMap['EB_WM_CALL_ALERTING'] == jsonData.msg) {
+                    jqEBM.updateAccountBecalling(jsonData.call_info.call_id, jsonData.call_info.from_user_id, false);
+                    if (msgcodeMap['EB_WM_CALL_ALERTING'] == jsonData.notification_type) {
                         this.processCallAlerting(req, jsonData);
                     }
                     break;
@@ -3828,7 +4010,8 @@
                     }
                     callback(errCodeMap.OK, clientInfo);
                     break;
-                case apiMap["ebwebcm.enter"]://本客户端cm_enter
+                case apiMap["ebwebcm.chatenter"]://本客户端cm_enter
+
 
 
 
@@ -3839,17 +4022,17 @@
                         break;
                     }
 
-                    if (msgcodeMap['CR_WM_ENTER_ROOM'] == jsonData.msg) {
+                    if (msgcodeMap['CR_WM_ENTER_ROOM'] == jsonData.notification_type) {
 
 
 
                         pv = $.evalJSON(req.pv);
 
-                        callInfo = chatMap[pv.call_id];
+                        callInfo = chatMap[pv.chat_id];
 
                         clientInfo.cm_sids[callInfo.cm_url] = jsonData.eb_sid;
 
-                        EBCM.ebwebcm_hb(callInfo.cm_url, pv.from_uid);
+                        EBCM.ebwebcm_holdconnect(callInfo.cm_url, pv.from_user_id);
 
                         eventHandle.onEnterCall(callInfo,null);
 
@@ -3902,7 +4085,7 @@
                     break;
 
 
-                case apiMap["ebwebcm.exit"]:
+                case apiMap["ebwebcm.chatexit"]:
                     if (jsonData.code != statecodeMap["EB_STATE_OK"]) {
                         text_area_log(jsonData.error);
                         if(eventHandle)
@@ -3910,7 +4093,7 @@
                         break;
                     }
 
-                    if (msgcodeMap['CR_WM_EXIT_ROOM'] == jsonData.msg) {
+                    if (msgcodeMap['CR_WM_EXIT_ROOM'] == jsonData.notification_type) {
                         text_area_log("退出会话");
                         pv = $.evalJSON(req.pv);
 
@@ -3931,14 +4114,14 @@
                         text_area_log("ebwebcm.sendrich chat_id error, 即将尝试重新载入会话");
                         pv = $.evalJSON(req.pv);
                         callInfo = chatMap.callInfoByChatId(pv.chat_id);
-                        jqEBM.reloadChat(callInfo.call_id, null, callInfo.call_key);
+                        jqEBM.reloadChat(callInfo.chat_id, null, callInfo.call_key);
 
                         if(callback)
                             callback(errCodeMap.CHAT_INVALID);
                         break;
                     }
 
-                    if (jsonData.code == statecodeMap["EB_STATE_OK"] && msgcodeMap["CR_WM_SEND_RICH"] == jsonData.msg) {
+                    if (jsonData.code == statecodeMap["EB_STATE_OK"] && msgcodeMap["CR_WM_SEND_RICH"] == jsonData.notification_type) {
                         text_area_log('消息发送成功');
                         if(callback)
                             callback(errCodeMap.OK);
@@ -3954,9 +4137,12 @@
                         if(callback)
                             callback(errCodeMap.SENDFILE_REQUEST_FAILURE);
                     }
+
                     break;
 
-                case apiMap["ebwebum.hb"]:
+                case apiMap["ebwebum.holdconnect"]:
+
+
 
 
                     //当前心跳连接计数减少1
@@ -3970,7 +4156,7 @@
                     if (!jsonData) {
                         text_area_log("um no return data");
                         setTimeout(function(){
-                            EBUM.ebwebum_hb();
+                            EBUM.ebwebum_holdconnect();
                         },2000);
                         break;
                     }
@@ -4001,13 +4187,13 @@
                         }
 
                         //对方不应答
-                        if (msgcodeMap['EB_WM_CALL_ERROR'] == jsonData.msg) {
+                        if (msgcodeMap['EB_WM_CALL_ERROR'] == jsonData.notification_type) {
                             text_area_log("um_hb 对方没有应答呼叫");
                             //$("#loading_message").append("<font color='red'>对方没有应答呼叫</font>");
                             //待补充
                             processor.processCallTimeout(req, jsonData);
 
-                            caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_uid;
+                            caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_user_id;
                             text_area_log("umhb caKey = " + caKey);
                             callAccountHandle = jqEBM.callAccountHandleMap[caKey];
                             if(callAccountHandle)
@@ -4019,13 +4205,13 @@
 
                     //call error 对方拒绝呼叫
                     if (jsonData.code == statecodeMap["EB_STATE_USER_BUSY"]) {
-                        if (msgcodeMap['EB_WM_CALL_BUSY'] == jsonData.msg) {
+                        if (msgcodeMap['EB_WM_CALL_BUSY'] == jsonData.notification_type) {
                             text_area_log("对方拒绝呼叫");
                             //$("#loading_message").append("<font color='red'>对方拒绝呼叫</font>");
                             //待补充
                             processor.processCallReject(req, jsonData);
 
-                            caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_uid;
+                            caKey = jsonData.call_info.call_id + "-" + jsonData.call_info.from_user_id;
                             text_area_log("caKey = " + caKey);
                             callAccountHandle = jqEBM.callAccountHandleMap[caKey];
                             if(callAccountHandle)
@@ -4036,12 +4222,12 @@
                     }
 
                     //有业务数据
-                    if (msgcodeMap['EB_WM_CALL_CONNECTED'] == jsonData.msg) {
+                    if (msgcodeMap['EB_WM_CALL_CONNECTED'] == jsonData.notification_type) {
                         //检查是否call_id已变更
                         var new_call_info = jsonData.call_info;
-                        if (new_call_info.group_code == "0"  //只针对非群组会话
+                        if (new_call_info.group_id == "0"  //只针对非群组会话
                             && new_call_info.oc_id == "0") {
-                            var uid = new_call_info.from_uid;
+                            var uid = new_call_info.from_user_id;
                             var exist_call_id = uidCallidMap[uid];
                             text_area_log("EB_WM_CALL_CONNECTED exist_call_id=" + exist_call_id + ", new_call_id=" + new_call_info.call_id);
                             if (exist_call_id && exist_call_id != new_call_info.call_id) {//有变更
@@ -4054,34 +4240,34 @@
                     }
 
                     //用户在另一客户端登录
-                    if (msgcodeMap['EB_WM_ONLINE_ANOTHER_UM'] == jsonData.msg) {
+                    if (msgcodeMap['EB_WM_ONLINE_ANOTHER_UM'] == jsonData.notification_type) {
                         processor.processOnlineAnother(req, jsonData);
-                        var key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.hb");
+                        var key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.holdconnect");
                         jqEBM.connectMap[key] = 100;
                         break;
                     }
 
                     //群组成员在线状态变更事件
-                    if(msgcodeMap['EB_WM_USER_STATE_CHA'] == jsonData.msg){
+                    if(msgcodeMap['EB_WM_USER_STATE_CHA'] == jsonData.notification_type){
 
                         eventHandle.onLineStateChange(jsonData,'1');
 
                     }
                     //联系人在线状态变更
-                    if(msgcodeMap['EB_WM_CONTACT_STATE_CHANG'] == jsonData.msg){
+                    if(msgcodeMap['EB_WM_CONTACT_STATE_CHANG'] == jsonData.notification_type){
                         eventHandle.onLineStateChange(jsonData,'2');
 
                     }
 
                     //对方um主动挂断
-                    if (msgcodeMap['EB_WM_CALL_HANGUP'] == jsonData.msg) {
+                    if (msgcodeMap['EB_WM_CALL_HANGUP'] == jsonData.notification_type) {
                         var local_call_info = chatMap[jsonData.call_info.call_id];
                         if(local_call_info){
                             if (jsonData.hangup == "0") {
-                                jqEBM.reloadChat(jsonData.call_info.call_id, jsonData.call_info.from_uid, local_call_info.call_key);
+                                jqEBM.reloadChat(jsonData.call_info.call_id, jsonData.call_info.from_user_id, local_call_info.call_key);
                             } else if (jsonData.hangup == "1") {
                                 local_call_info.hangup = true;
-                                EBCM.ebwebcm_exit(jsonData.call_info.call_id);
+                                EBCM.ebwebcm_chatexit(jsonData.call_info.call_id);
                                 EBUM.ebwebum_hangup(jsonData.call_info.call_id, false);
                             }
                         }
@@ -4089,11 +4275,13 @@
                     }
 
                     if (clientInfo.line_state != "0") {
-                        EBUM.ebwebum_hb();
+                        EBUM.ebwebum_holdconnect();
                     }
                     break;
-
-                case apiMap["ebwebcm.hb"]:
+                case apiMap["ebwebcm.msgack"]:
+                    text_area_log("ebwebcm.msgack code=" + jsonData.code + ", error=" + jsonData.error);
+                    break;
+                case apiMap["ebwebcm.holdconnect"]:
 
 
                     //if(jqEBM.cmhbAuthErrorTimes >= 5){
@@ -4104,7 +4292,7 @@
 
                     //当前心跳连接计数减少1
 
-                    var cm_key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.hb");
+                    var cm_key = jqEBM.CM_CONNECTMAP_KEY_PREFIX + fn.createRestUrl(req.url.split("/rest")[0], jqEBM.API_VERSION, "ebwebcm.holdconnect");
 
 
                     text_area_log("connectMap[" + cm_key + "]=" + connectMap[cm_key]);
@@ -4117,13 +4305,13 @@
                     if (!jsonData) {
                         text_area_log("cm no return data");
                         setTimeout(function(){
-                            EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+                            EBCM.ebwebcm_holdconnect(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
                         },2000);
                         break;
                     }
                     //有报错信息
                     if (jsonData.error) {
-                        text_area_log("ebwebcm.hb code=" + jsonData.code + ", error=" + jsonData.error);
+                        text_area_log("ebwebcm.holdconnect code=" + jsonData.code + ", error=" + jsonData.error);
 
                     }
 
@@ -4137,9 +4325,9 @@
                             break;
                         }
 
-                        text_area_log("processReceiveData ebwebcm.hb call_info not found for chat_id=" + jsonData.chat_id);
-                        text_area_log("processReceiveData ebwebcm.hb chatMap===\n" + $.toJSON(chatMap));
-                        EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+                        text_area_log("processReceiveData ebwebcm.holdconnect call_info not found for chat_id=" + jsonData.chat_id);
+                        text_area_log("processReceiveData ebwebcm.holdconnect chatMap===\n" + $.toJSON(chatMap));
+                        EBCM.ebwebcm_holdconnect(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
 
 
 
@@ -4151,9 +4339,9 @@
                             //jqEBM.cmhbAuthErrorTimes = jqEBM.cmhbAuthErrorTimes + 1;
                             //待定
                             //fire 聊天会话失效事件
-                            text_area_log("ebwebcm.hb chat_id error, 即将尝试重新载入会话");
+                            text_area_log("ebwebcm.holdconnect chat_id error, 即将尝试重新载入会话");
                             jqEBM.reloadChat(callInfo.call_id, null, callInfo.call_key);
-                            EBCM.ebwebcm_hb(callInfo.cm_url, jqEBM.clientInfo.my_uid);
+                            EBCM.ebwebcm_holdconnect(callInfo.cm_url, jqEBM.clientInfo.my_uid);
 
                             break;
                         }
@@ -4162,14 +4350,14 @@
                         if (jsonData.code == statecodeMap["EB_STATE_TIMEOUT_ERROR"] && jsonData.error == "timeout") {
                             text_area_log("cm_hb 没有数据，长轮询断开");
 
-                            EBCM.ebwebcm_hb(callInfo.cm_url, jqEBM.clientInfo.my_uid);
+                            EBCM.ebwebcm_holdconnect(callInfo.cm_url, jqEBM.clientInfo.my_uid);
                             break;
                         }
 
-                        switch (parseInt(jsonData.msg, 10)) {
+                        switch (parseInt(jsonData.notification_type, 10)) {
                             //对方离开会话
                             case msgcodeMap["CR_WM_USER_EXIT_ROOM"]:
-                                text_area_log(jsonData.chat_id + ", exit room, uid:" + jsonData.from_uid);
+                                text_area_log(jsonData.chat_id + ", exit room, uid:" + jsonData.from_user_id);
                                 text_area_log($.toJSON(callInfo));
 
                                 this.processUserCMExit(req, jsonData);
@@ -4177,7 +4365,7 @@
                                 if (jsonData.hangup == "0") {
                                     //待定
                                     //fire 对方离开会话事件
-                                    jqEBM.reloadChat(callInfo.call_id, jsonData.from_uid, callInfo.call_key);
+                                    jqEBM.reloadChat(callInfo.call_id, jsonData.from_user_id, callInfo.call_key);
                                 }
                                 break;
 
@@ -4189,16 +4377,16 @@
                             //对方进入会话事件
                             case msgcodeMap["CR_WM_USER_ENTER_ROOM"]:
 
-                                text_area_log(jsonData.chat_id + ", enter room, uid:" + jsonData.from_uid);
+                                text_area_log(jsonData.chat_id + ", enter room, uid:" + jsonData.from_user_id);
                                 this.processUserCMEnter(req, jsonData);
 
-                                caKey = callInfo.call_id + "-" + jsonData.from_uid;
+                                caKey = callInfo.call_id + "-" + jsonData.from_user_id;
 
                                 text_area_log("CR_WM_USER_ENTER_ROOM caKey = " + caKey);
                                 callAccountHandle = jqEBM.callAccountHandleMap[caKey];
                                 if(callAccountHandle)
 
-                                    callAccountHandle(errCodeMap.OK, {callInfo: callInfo, accountInfo: jqEBM.accountInfoMap[jsonData.from_uid]});
+                                    callAccountHandle(errCodeMap.OK, {callInfo: callInfo, accountInfo: jqEBM.accountInfoMap[jsonData.from_user_id]});
 
 
                                 delete jqEBM.callAccountHandleMap[caKey];
@@ -4214,46 +4402,54 @@
                                     //设置下线状态，防止下一个触发下一个um长连接
                                     //clientInfo.line_state = 0;
 //                                //下线
-//                                EBUM.ebwebum_offline();
+//                                EBUM.ebwebum_logout();
                                     callInfo.hangup = false;
                                     //EBUM.ebwebum_hangup(callInfo.call_id, true);
                                     this.processMyCMExit(callInfo.call_id);
 
                                     //return;//直接返回，不再触发cm_hb长连接
                                 }
-                                //EBCM.ebwebcm_hb(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
+                                //EBCM.ebwebcm_holdconnect(req.url.split("/rest")[0] , jqEBM.clientInfo.my_uid);
                                 break;
 
                             //接收到消息
                             case msgcodeMap['CR_WM_RECEIVE_RICH']:
-                                text_area_log("receive message, uid:" + jsonData.from_uid + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
+                                text_area_log("receive message, uid:" + jsonData.from_user_id + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
 //                            var htmlStr = processor.processRichInfo(jsonData.rich_info);
 //                            text_area_log(htmlStr);
                                 if(eventHandle) {
-                                    if(callInfo.group_code == '0'){
+                                    if(callInfo.group_id == '0'){
 
-                                        eventHandle.onReceiveMessage(callInfo, jqEBM.accountInfoMap[jsonData.from_uid], jqEBM.processRichInfo(jsonData.rich_info));
+                                        eventHandle.onReceiveMessage(callInfo, jqEBM.accountInfoMap[jsonData.from_user_id], jqEBM.processRichInfo(jsonData.rich_info));
 
                                     }else{
-                                        eventHandle.onReceiveMessage(callInfo, jsonData.from_uid , jqEBM.processRichInfo(jsonData.rich_info));
+                                        eventHandle.onReceiveMessage(callInfo, jsonData.from_user_id , jqEBM.processRichInfo(jsonData.rich_info));
 
                                     }
+                                    EBCM.ebwebcm_msgack(callInfo.cm_url, callInfo.chat_id, jsonData.msg_id, 0);
+
                                 }
+
+
                                 break;
 
                             //收到一个文件
                             case msgcodeMap["CR_WM_RECEIVED_FILE"]:
 
-                                text_area_log("receive file, uid:" + jsonData.from_uid + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
+                                text_area_log("receive file, uid:" + jsonData.from_user_id + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
                                 if(eventHandle) {
-                                    eventHandle.onReceiveFile(callInfo, jsonData.from_uid, jsonData.file_info);
+                                    eventHandle.onReceiveFile(callInfo, jsonData.from_user_id, jsonData.file_info);
+                                    EBCM.ebwebcm_msgack(callInfo.cm_url, callInfo.chat_id, jsonData.file_info.msg_id, 0);
+
+
                                 }
+
                                 break;
-                            //对方发送文件，绝句或者接收
+                            //对方发送文件，拒绝或者接收
                             case msgcodeMap["CR_WM_RECEIVING_FILE"]:
-                                text_area_log("receiving file, uid:" + jsonData.from_uid + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
+                                text_area_log("receiving file, uid:" + jsonData.from_user_id + ", from_account:" + jsonData.from_account + ", private=" + jsonData.private);
                                 if(eventHandle) {
-                                    eventHandle.onReceivingFile(callInfo, jsonData.from_uid, jsonData.file_info);
+                                    eventHandle.onReceivingFile(callInfo, jsonData.from_user_id, jsonData.file_info);
                                 }
                                 break;
 
@@ -4267,15 +4463,16 @@
                                 this.processSentFile(req, jsonData);
                                 break;
 
-                            //对方接收文件成功
+                            //对方取消发送
                             case msgcodeMap["CR_WM_CANCEL_FILE"]:
+
                                 this.processCancelReceiveFile(req, jsonData);
                                 break;
 
                         }
 
                         if (!jsonData.hangup || jsonData.hangup == "0") {//非挂断
-                            EBCM.ebwebcm_hb(callInfo.cm_url, jqEBM.clientInfo.my_uid);
+                            EBCM.ebwebcm_holdconnect(callInfo.cm_url, jqEBM.clientInfo.my_uid);
                         }
                     }
 
@@ -4303,6 +4500,35 @@
        var fn = jqEBM.fn;
        var clientInfo = jqEBM.clientInfo;
 
+       api.logon = function(params,successCallback,failureCallback){
+           var try_times = 0;//必须定义变量
+           //载入跨域执行页面
+           var url =options.HTTP_PREFIX + options.DOMAIN_URL + options.WEBIM_PLUGIN + "/iframe_domain.html?fr_name="
+               + fn.domainURI(options.HTTP_PREFIX + options.DOMAIN_URL) + (options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION;
+           fn.load_iframe(url,
+               try_times,
+               
+               function () {
+                   jqEBM.EBUM.ebwebum_logon(params,successCallback,failureCallback);
+               });
+       }
+
+
+       /**
+        * 验证appid
+        */
+       api.authappid = function(successCallback,failureCallback){
+           var try_times = 0;//必须定义变量
+           //载入跨域执行页面
+           var url =options.HTTP_PREFIX + options.DOMAIN_URL + options.WEBIM_PLUGIN + "/iframe_domain.html?fr_name="
+               + fn.domainURI(options.HTTP_PREFIX + options.DOMAIN_URL) + (options.IFRAME_DEBUG?"&debug=true":"") + "&v=" + jqEBM.STATIC_VERSION;
+           fn.load_iframe(url,
+               try_times,
+               
+               function () {
+                   jqEBM.EBLC.authappid(successCallback,failureCallback);
+               });
+       }
 
        /**
         * 退出cm
@@ -4311,7 +4537,7 @@
         * @param successCallback
         * @param failureCallback
         */
-       api.ebcm_exit = function(chatid, successCallback,failureCallback){
+       api.ebcm_chatexit = function(chatid, successCallback,failureCallback){
            var try_times = 0;//必须定义变量
            //载入跨域执行页面
            var url =options.HTTP_PREFIX + options.DOMAIN_URL + options.WEBIM_PLUGIN + "/iframe_domain.html?fr_name="
@@ -4320,13 +4546,13 @@
                try_times,
                //用户登录
                function () {
-                   jqEBM.EBCM.ebwebcm_exit(chatid , successCallback,failureCallback);
+                   jqEBM.EBCM.ebwebcm_chatexit(chatid , successCallback,failureCallback);
                });
 
        }
        /**
         * 加载组织架构 表情 公司信息
-        * @param parameter {group_code:xxx,load_ent_dep:xxx,load_ent_dep:xxx,load_emp:xxx,load_image:xxx}
+        * @param parameter {group_id:xxx,load_ent_dep:xxx,load_ent_dep:xxx,load_emp:xxx,load_image:xxx}
         * @param successCallback
         * @param failureCallback
         */
@@ -4454,8 +4680,8 @@
         * @param successCallback() {function} 发送成功回调函数
         * @param failureCallback(error) {function} 发送失败回调函数
         */
-       api.offline = function (successCallback, failureCallback) {
-           jqEBM.EBUM.ebwebum_offline(function(state, param) {
+       api.logout = function (successCallback, failureCallback) {
+           jqEBM.EBUM.ebwebum_logout(function(state, param) {
                if(state == jqEBM.errCodeMap.OK) {
                    if (successCallback) successCallback();
                } else {

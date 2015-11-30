@@ -376,7 +376,7 @@
              *
              */
             screenshot_handler: function($this){
-                
+
                 var i = $.layer({
                     type : 1,
                     title : false,
@@ -481,10 +481,12 @@
             ,
             exit:function(){//退出登录
                 layer.confirm("您确定退出吗?",function(){
+
                     $.each($.ebCache.chatid_list, function(i, item){
-                        $.ebMsg.ebcm_exit(item);
+                        $.ebMsg.ebcm_chatexit(item);
                     });
-                    $.ebMsg.offline(function(){
+                    $.ebMsg.logout(function(){
+                        
                         window.onbeforeunload = null;
                         window.location.reload();
 
@@ -613,7 +615,7 @@
                             $.ebCache.chat_win_cache[account] = null;
                             $.ebTemp.cache.calling_cache[account] = null;
 
-                            $.jqEBMessenger.EBCM.ebwebcm_exit(chat_id);
+                            $.jqEBMessenger.EBCM.ebwebcm_chatexit(chat_id);
                         }, 300000);
                         $.ebCache.timer_map[account] = timer;
 
@@ -786,7 +788,9 @@
 
 
 
+
                 var account = $self.attr('account');
+
 
 
                 if(account == $.jqEBMessenger.clientInfo.my_uid){
@@ -1147,10 +1151,10 @@
                             if (agent.indexOf('MSIE') != -1) {//IE浏览器
 
                             } else {//非IE浏览器
-                                if (file_input.files[0].size > 1 * 1024 * 1024) {
-                                    layer.alert("最多只支持大小为1M的文件");
-                                    return;
-                                }
+                                //if (file_input.files[0].size > 1 * 1024 * 1024) {
+                                //    layer.alert("最多只支持大小为1M的文件");
+                                //    return;
+                                //}
                             }
 
 
@@ -1174,6 +1178,11 @@
                                 }
 
                                 switch (state) {
+                                    //文件上传失败:未知原因
+                                    case errCodeMap.FILE_UPLOAD_FAIL:
+                                        $.ebTemp.fun.push_info(account, "<div class='eb_info'>申请上传文件失败。</div>");
+//                                        $.ShowSysTips(callId, "<span style='color:red;'>申请上传文件失败。</span>");
+                                        break;
                                     //申请上传文件失败
                                     case errCodeMap.SENDFILE_REQUEST_FAILURE:
                                         $.ebTemp.fun.push_info(account, "<div class='eb_info'>申请上传文件失败。</div>");
@@ -1191,7 +1200,7 @@
 //                                        file.outerHTML += "";
 //                                        file.value = "";
 //
-                                        $.ebTemp.fun.push_info(account, "<div class='eb_info'>很抱歉！上传失败，文件超过最大限制(1MB-兆字节)。</div>");
+                                        $.ebTemp.fun.push_info(account, "<div class='eb_info'>很抱歉！上传失败，文件超过最大限制。</div>");
                                         break;
                                     //离线保存成功
                                     case errCodeMap.OK:
@@ -1230,17 +1239,21 @@
 
 
                                         break;
+                                    default:
+                                        $.ebTemp.fun.push_info(account, "<div class='eb_info'>申请上传文件失败。</div>");
+                                        break;
 
                                 }
                             }, function (state, callId, fileName) {
+
                                 var spls = fileName.split("\\");
                                 fileName = spls[spls.length - 1];
                                 var errCodeMap = $.jqEBMessenger.errCodeMap;
                                 var callInfo = $.jqEBMessenger.chatMap.callInfoByChatId(callId);
                                 var account = null;
-                                if (callInfo && callInfo.group_code != '0') {
-                                    account = callInfo.group_code;
-                                } else if (callInfo && callInfo.group_code == '0') {
+                                if (callInfo && callInfo.group_id != '0') {
+                                    account = callInfo.group_id;
+                                } else if (callInfo && callInfo.group_id == '0') {
 
                                     for (var key in callInfo.accounts) {
                                         if (key != $.jqEBMessenger.clientInfo.my_uid) {
@@ -1303,26 +1316,26 @@
                 });
                 for (var i = 0; i < emos.length; i++) {
                     var emo = emos[i];
-                    if (emo.res_type != '6') {
+                    if (emo.resource_type != '6') {
                         continue;
                     }
                     var url = [
                         "http://",
-                        emo.server,
-                        "/servlet.ebwebcm.res?resid=",
-                        emo.resid
+                        emo.resource_url,
+                        "/servlet.ebwebcm.res?resource_id=",
+                        emo.resource_id
                     ].join("");
                     //var url = pool.emos[i].url;
 
 
                     var img = '<img class="face" name="face" width="30px" height="30px" src="' + url + '" ' +
-                        ' resid="' + emo.resid + '"' +
-                        ' server="' + emo.server + '"' +
-                        ' cmserver="' + emo.server + '"' +
+                        ' resid="' + emo.resource_id + '"' +
+                        ' server="' + emo.resource_url + '"' +
+                        ' cmserver="' + emo.resource_url + '"' +
                         ' desc="' + emo.desc + '"' +
-                        ' index="' + emo.index + '"' +
+                        ' index="' + emo.display_index + '"' +
                         ' type="' + emo.type + '"' +
-                        ' res_type="' + emo.res_type + '"' +
+                        ' res_type="' + emo.resource_type + '"' +
                         ' />';
 
                     temp += img;
@@ -1489,7 +1502,7 @@
                     var email = group_info.email;
                     var phone = group_info.phone;
                     var des = group_info.description;
-                    var url = group_info.url;
+                    var url = group_info.url || "";
                     var enterprise_code = group_info.enterprise_code;
                     var ent_name = $.ebCache.org.enterprise_info.enterprise_name;
                     var type = "群组";
@@ -1581,7 +1594,7 @@
                             $.ebCache.my_group_members[member.member_uid] = member;
                             //var member = members[j];
                             var head_img = $.eb_client_config.contact_img;
-                            if (member.head_file.length > 0) {
+                            if (member.head_file && member.head_file.length > 0) {
                                 head_img = member.head_file;
                             }
                             var contact_title = member.user_name.length > 0 ? member.user_name : member.member_account;
@@ -1643,9 +1656,14 @@
                             '<span class="recent_back" onclick="$.ebTemp.temps.recent_list.remove();"><<返回聊天</span>' +
                         '</div>')
                         .appendTo($recent_list);
-
                     $recent_list.css("top",$("#xxim_tabs").offset().top);
                     $recent_list.css("left",$("#xxim_tabs").offset().left);
+
+                    $(window).resize(function(){
+                        $recent_list.css("top",$("#xxim_tabs").offset().top);
+                        $recent_list.css("left",$("#xxim_tabs").offset().left);
+                    });
+
 
                     $.each(recent_list, function(i,item){
                         var type = item.type;
@@ -1846,7 +1864,6 @@
              * @param data chat window init data {uid:'',url:'',face:''}
              */
             show_chat_win : function(data){
-
 
                 if(!$.ebTemp.cache.chat_win_index){
 
@@ -2091,7 +2108,12 @@
                     var sort_members = function(membs){
 
                         membs.sort(function(a,b){
-                            if(a.line_state != b.line_state){
+
+
+                            if(a.display_index != b.display_index){
+                                return a.display_index > b.display_index ? -1 : 1;
+                            }else if(a.line_state != b.line_state){
+
                                 return b.line_state - a.line_state;
                             }else{
                                 var str1 = $URL.toGBKInt(a.user_name);
@@ -2105,7 +2127,7 @@
 
                     var update_ols = function(group_id,members,call){
 
-                            var params = {group_code:group_id};
+                            var params = {group_id:group_id};
                             $.ebMsg.loadols(params,function(params){
 
                                 var ols = params.user_ols;
@@ -2155,7 +2177,7 @@
 
                         }else{
                             $.ebMsg.loadorg({
-                                group_code:gid,
+                                group_id:gid,
                                 load_my_group:'0',
                                 load_ent_dep:'0',
                                 load_image:'0'
@@ -2273,8 +2295,9 @@
                         var nodeList = parentNode.children;
 
                         nodeList.sort(function(a, b) {
-
-                            if (a.line_state != b.line_state) {
+                            if(a.display_index != b.display_index){
+                                return a.display_index > b.display_index ? -1 : 1;
+                            } else if (a.line_state != b.line_state) {
                                 return b.line_state - a.line_state;
                             } else {
                                 var str1 = $URL.toGBKInt(a.name);
@@ -2307,6 +2330,7 @@
                    
 
                     var org = cache.org;
+
 
                     var depart_info = org.enterprise_info; //企业信息
 
@@ -2341,9 +2365,9 @@
                     }
 
 
-                    data.sort(function(a, b) {
-                        return a.display_index - b.display_index;
-                    });
+                    //data.sort(function(a, b) {
+                    //    return a.display_index > b.display_index ? -1 : 1;
+                    //});
 
                     return data;
 
@@ -2764,7 +2788,7 @@
                     $.ebMsg.sendMessage(call_id,chat,function(){
 //                       var chat_list = $.ebCache.get_chats(uid);
 
-                        if($.jqEBMessenger.clientInfo.user_type == "visitor"){
+                        if($.ebCache.user_type == "2"){
                             $.jqEBMessenger.clientInfo.username = '游客';
                         }
                         $.ebTemp.fun.push_msg({
@@ -2832,17 +2856,23 @@
                 logonVistor : function(call_num){
                     $('body').css('background','#fff');
                     $.eb_client_config.cs.init();
-                    var load_index = layer.load();
+                    var load_index = layer.load(30);
                     $.ebCache.user_type = '2';
-                    $.ebMsg.logonVisitor(function(data){
-                        $.ebCache.logon_params = data;
-                        $.ebMsg.online(function(){
+                    $.ebMsg.authappid(function(data){
+                        $.ebCache.authappid_info = data;
+                        var logon_params = {
+                            logon_type: 4
+                        };
+                        $.ebMsg.logon(logon_params, function(logon_result){
+
+                            $.ebCache.logon_params = logon_result;
                             $.ebMsg.loadorg({
-                                load_ent_dep:0,
+                                load_enterprise_department:0,
                                 load_my_group:0,
-                                load_emp:0
+                                load_member:0
                             },function(org){
                                 if(org && org.emotions){
+
                                     $.ebCache.org = org;
 
 
@@ -2860,20 +2890,58 @@
                                         im_state.state_handler(error,load_index);
                                     });
                                 }
-
                             },function(state){
-                                im_state(state,load_index);
+                                im_state.state_handler(state,load_index);
                             });
 
-
                         },function(state){
-                            im_state(state,load_index);
+                            im_state.state_handler(state,load_index);
                         });
 
-
-                    } , function(state){
-                        im_state.state_handler(state, load_index);
+                    },function(state){
+                        im_state.state_handler(state,load_index);
                     });
+
+                    //$.ebMsg.logonVisitor(function(data){
+                    //    $.ebCache.logon_params = data;
+                    //    $.ebMsg.online(function(){
+                    //        $.ebMsg.loadorg({
+                    //            load_ent_dep:0,
+                    //            load_my_group:0,
+                    //            load_emp:0
+                    //        },function(org){
+                    //            if(org && org.emotions){
+                    //                $.ebCache.org = org;
+                    //
+                    //
+                    //                $.ebMsg.callAccount(call_num, null , null ,function(callInfo,accountInfo){
+                    //
+                    //                    //$.ebCache.add_call_account_cache(callInfo,accountInfo);
+                    //
+                    //
+                    //                    layer.close(load_index);
+                    //
+                    //                    $(".layim_rightbtn").hide();
+                    //
+                    //
+                    //                },function(error){
+                    //                    im_state.state_handler(error,load_index);
+                    //                });
+                    //            }
+                    //
+                    //        },function(state){
+                    //            im_state(state,load_index);
+                    //        });
+                    //
+                    //
+                    //    },function(state){
+                    //        im_state(state,load_index);
+                    //    });
+                    //
+                    //
+                    //} , function(state){
+                    //    im_state.state_handler(state, load_index);
+                    //});
                 },
                 logon: function(){
 
@@ -2881,71 +2949,75 @@
 
                     if(logon_user && logon_user.line_state == '0'){
                         $.ebTemp.temp_handler.show_logon_win(function(account, password){
-                            $.ebMsg.queryUser(2, account, function(user){
-                                var acount_type = user['account-type'];
-                                var md5_password = $.md5(user.uid + "" + password).toLowerCase();
-                                var logon_type = 4096;
-                                if((acount_type && acount_type == "1") || $.ebCache.sysinfo['passwd-auth-mode'] == "2"){
-                                    md5_password = password;
-                                    logon_type = 4112;
-                                }
+                            $.ebMsg.authappid(function(data){
+                                $.ebCache.authappid_info = data;
 
 
                                 //登录
                                 var load_index = layer.load("登录中...",60);
+                                var logon_params = {
+                                    logon_type: 4096,
+                                    account:account,
+                                    password:password
+                                };
+                                $.ebMsg.logon(logon_params, function(logon_result){
+                                    $.jqEBMessenger.clientInfo.user_type = "normal";
 
-                                $.ebMsg.logonAccount(user.uid, md5_password, logon_type ,function(param){
+                                    $.ebCache.logon_params = logon_result;
 
+                                    //加载联系人
+                                    $.ebMsg.loadcontact(function(contactList){
 
-                                    $.ebCache.logon_params = param;
+                                        $.ebMsg.loadorg({
+                                            load_member:'0'
+                                        },function(org){
+                                            if(!org){
+                                                im_state.state_handler({msg:"数据加载失败，请稍后再试！"},load_index);
+                                                return;
+                                            }
 
-
-                                    //上线
-
-                                    $.ebMsg.online(function(){
-
-                                        //加载联系人
-                                        $.ebMsg.loadcontact(function(contactList){
-
-                                            $.ebMsg.loadorg({
-                                                load_emp:'0'
-                                            },function(org){
-                                                if(!org){
-                                                    im_state.state_handler({msg:"数据加载失败，请稍后再试！"},load_index);
-                                                    return;
+                                            org.groups.sort(function(a, b){
+                                                if(a.display_index != b.display_index){
+                                                    return a.display_index > b.display_index ? -1: 1;
+                                                }else{
+                                                    var str1 = $URL.toGBKInt(a.group_name);
+                                                    var str2 = $URL.toGBKInt(b.group_name);
+                                                    return str1 > str2 ? 1 : -1;
                                                 }
+                                             
 
-                                                if(!$.ebCache.org_loaded){
-                                                    $.ebCache.org_loaded = true;
-                                                    $.ebCache.org = org;
-                                                    var groups = org.groups;
-                                                    groups.sort(function(a,b){
-                                                        if(a.enterprise_code == b.enterprise_code){
-                                                            return a.group_name > b.group_name ? 1 : -1;
-                                                        }else{
-                                                            return a.enterprise_code - b.enterprise_code;
-                                                        }
-                                                    });
-
-                                                    $.ebTemp.temp_handler.show_main_win(contactList,org);
-                                                    $.im_state.init();
-                                                    layer.close(load_index);
-                                                    $.ebTemp.temp_handler.close_logon_win();
-                                                    $.jqEBMessenger.EBUM.ebwebum_loadinfo();
-                                                    setInterval(function(){
-                                                        $.jqEBMessenger.EBUM.ebwebum_loadinfo();
-                                                    },120000);
-                                                }
-
-
-
-                                            },function(state){
-                                                im_state.state_handler(state,load_index);
                                             });
+
+                                            if(!$.ebCache.org_loaded){
+                                                $.ebCache.org_loaded = true;
+                                                $.ebCache.org = org;
+                                                var groups = org.groups;
+                                                groups.sort(function(a,b){
+                                                    if(a.enterprise_code == b.enterprise_code){
+                                                        return a.group_name > b.group_name ? 1 : -1;
+                                                    }else{
+                                                        return a.enterprise_code - b.enterprise_code;
+                                                    }
+                                                });
+
+                                                $.ebTemp.temp_handler.show_main_win(contactList,org);
+                                                $.im_state.init();
+                                                layer.close(load_index);
+                                                $.ebTemp.temp_handler.close_logon_win();
+                                                $.jqEBMessenger.EBUM.ebwebum_loadinfo();
+                                                setInterval(function(){
+                                                    $.jqEBMessenger.EBUM.ebwebum_loadinfo();
+                                                },120000);
+                                            }
+
+
 
                                         },function(state){
                                             im_state.state_handler(state,load_index);
                                         });
+
+                                    },function(state){
+                                        im_state.state_handler(state,load_index);
                                     });
 
 
@@ -2960,13 +3032,6 @@
                         return;
                     }
 
-//                    $.ebMsg.queryUser(2,account,function(param){
-//
-//
-//                    },function(state){
-//                            alert(state.error);
-//                    });
-
                 }
 
             }
@@ -2974,6 +3039,81 @@
         });
 
         /*方法重写*/
+
+
+        $.ebMsg.eventHandle.onReceiveData = function(type, data){
+            if(!data){
+                return;
+            }
+            var changeKey = function(old_key, new_key, item){
+                if(item && item[old_key]){
+                    item[new_key] = item[old_key];
+                    delete item[old_key];
+                }
+                //else{
+                //    item[new_key] = "";
+                //    delete item[old_key];
+                //}
+
+            }
+            var apiMap = $.jqEBMessenger.apiMap;
+            switch (type) {
+                case apiMap["ebwebum.loadorg"]:
+
+                    changeKey("enterprise_url", "url", data.enterprise_info);
+                    changeKey("create_user_id", "create_uid", data.enterprise_info);
+                    changeKey("enterprise_ext", "ent_ext", data.enterprise_info);
+                    if(data['groups']){
+                        var groups = data['groups'];
+                        groups.forEach(function(item){
+                            changeKey("group_id", "group_code",item);
+                            changeKey("parent_id", "parent_code", item);
+                            changeKey("group_url", "url", item);
+                            changeKey("create_user_id", "create_uid", item);
+                            changeKey("my_member_code","my_emp_id", item);
+                            changeKey("member_count", "emp_count", item);
+                            changeKey("group_version", "group_ver", item);
+                        });
+                    }
+                    if(data["members"]){
+                        var members = data["members"];
+                        members.forEach(function(item){
+
+                            changeKey("group_id","group_code", item);
+                            changeKey("head_file_url", "head_file", item);
+                            changeKey("member_user_id", "member_uid", item);
+                        });
+
+                    }
+                    //if(data["emotions"]){
+                    //    var emotions = data["emotions"];
+                    //    emotions.forEach(function(item){
+                    //        changeKey("resource_id", "resid", item);
+                    //        changeKey("resource_url", "server", item);
+                    //        changeKey("resource_url_ssl", "server", item);
+                    //        changeKey("resource_type", "res_type", item);
+                    //        changeKey("description", "desc", item);
+                    //        changeKey("display_index", "index", item);
+                    //    });
+                    //
+                    //
+                    //
+                    //}
+
+
+                    break;
+                case apiMap["ebwebum.loadols"]:
+                    changeKey("group_id", "group_code", data);
+                    break;
+                case apiMap["ebwebum.searchuser"]:
+                    var users = data.users;
+                    users.forEach(function(item){
+                        changeKey("group_id", "group_code", item);
+                        changeKey("member_user_id", "member_uid", item);
+                    });
+                    break;
+            }
+        }
         /**
          *
          * @param callInfo 呼叫信息
@@ -2992,7 +3132,7 @@
                 }else
 
                 if(mes.type = "screenshot"){
-                    
+
                     content += "<img type='screenshot' onclick='$.ebTemp.event.screenshot_handler($(this));' style='max-width:250px;cursor:pointer;' src='"+ mes.content +"'/>";
                 }else
                 if(mes.type = "emotion"){
@@ -3001,24 +3141,24 @@
                 }
             }
 
-            if(callInfo.group_code != '0'){
+            if(callInfo.group_id != '0'){
 
                     type = "he";
                     var face = eb_client_config.opposite_head_img;
-                    var name = $.ebTemp.fun.get_member_name(callInfo.group_code,accountInfo);
+                    var name = $.ebTemp.fun.get_member_name(callInfo.group_id,accountInfo);
 
                     if(accountInfo == $.jqEBMessenger.clientInfo.my_uid){
                         type = "me";
                         face = eb_client_config.my_head_img;
                     }
-                    $.ebTemp.event.count_msgs(callInfo.group_code,"group");
+                    $.ebTemp.event.count_msgs(callInfo.group_id,"group");
                     $.ebTemp.fun.push_msg({
                         content: content,
                         name: name,
                         face:face,
                         time:new Date(),
                         type:type
-                    },callInfo.group_code);
+                    },callInfo.group_id);
 
 
 
@@ -3027,12 +3167,11 @@
             }else{
                 if(!accountInfo){
 
-                    if(callInfo.group_code == '0'){
+                    if(callInfo.group_id == '0'){
                         accountInfo = {};
                         accountInfo.uid = $.jqEBMessenger.clientInfo.my_uid;
                     }
                 }
-
                 var uid = accountInfo.uid;
                 $.ebTemp.event.count_msgs(uid,"single");
 
@@ -3066,6 +3205,7 @@
                     time:new Date(),
                     type:type
                 },uid);
+
             }
 
 
@@ -3083,6 +3223,7 @@
                                             +   " <a name='ack_file"+file_info.msg_id+"'  href='javascript:;'>下载</a>"
                                             +   "<a target='_blank' name='common_link' style='display: none;' href='"+file_info.url+"'>下载</a>"
                                             + "</div>");
+            $("[file_name='"+ file_info.file +"']").remove();
 
             $("[name='ack_file"+file_info.msg_id+"']").mouseover(function(){
                 $.ebMsg.fileack(callInfo.chat_id,file_info.msg_id,0,function(param){
@@ -3103,14 +3244,14 @@
 
         $.ebMsg.eventHandle.onReceivingFile = function(callInfo, from_uid, file_info){
 
-            $.ebTemp.fun.push_info(from_uid, "<div class='eb_info' name='file_reving"+file_info.msg_id+"'>对方发送文件：" + file_info.file +
+            $.ebTemp.fun.push_info(from_uid, "<div f_uid='"+ from_uid +"' file_name='"+ file_info.msg_id +"_"+ file_info.file +"' class='eb_info' name='file_reving"+file_info.msg_id+"'>对方发送文件：" + file_info.file +
                                                "<span><a href='javascript:;' style='color: #0075BF;'>&nbsp;接收</a> <a style='color: red;'  href='javascript:;'>&nbsp;拒绝</a></span>"           +
                                              "</div>");
 
             $("[name='file_reving"+file_info.msg_id+"'] a:eq(0)").click(function(){
                 $.ebMsg.fileack(callInfo.chat_id,file_info.msg_id,3,function(param){
 
-                    $("[name='file_reving"+file_info.msg_id+"'] span").html("<span style='color:#b84d20;'>&nbsp;正在接收</span>");
+                    $("[name='file_reving"+file_info.msg_id+"'] span").html("<span style='color:#b84d20;'>&nbsp;接收中...</span>");
                 },function(state){
                     im_state.state_handler(state);
                 })
@@ -3126,8 +3267,19 @@
 
         }
 
+        $.ebMsg.eventHandle.onCancelSend = function(data){
+            var uid = data.from_user_id;
+
+            $("[f_uid="+ uid +"]:last").remove();
+            $.ebTemp.fun.push_info(uid, "<div class='eb_info'>对方已取消文件传送。</div>");
+
+
+
+        }
+
         //用户在线状态通知事件
         $.ebMsg.eventHandle.onLineStateChange = function(data,type){
+
 
             $.eb_organize.reList(data);//组织架构在线状态
             var eb_tree = $.fn.zTree.getZTreeObj("struct_list");
@@ -3173,7 +3325,7 @@
                 ul.children("li").each(function(){
                     var uid = $(this).attr("account");
                     var member = $.ebCache.my_group_members[uid];
-                    $.ebCache.handler_member();
+                    //$.ebCache.handler_member();
                     var $g_li = $(this);
                     $g_li.children('img').mouseover(function(){
                         $.ebTemp.temp_init_handler._show_card($g_li, 1, $g_li.attr('account'),member);
@@ -3213,7 +3365,7 @@
         $.ebMsg.eventHandle.onChatInvalid = function(callInfo){
             var account;
             var type= $.jqEBMessenger.chat_type.single;
-            if(callInfo.group_code == '0'){
+            if(callInfo.group_id == '0'){
                 var accounts = callInfo.accounts;
                 for(var key in accounts){
                     if(key != $.jqEBMessenger.clientInfo.my_uid){
@@ -3223,7 +3375,7 @@
 
             }else{
                 var type= $.jqEBMessenger.chat_type.group;
-                account = callInfo.group_code;
+                account = callInfo.group_id;
             }
             var chat_id = callInfo.chat_id;
             var call_str = "";
@@ -3243,7 +3395,7 @@
 
             $.ebCache.chatid_list.push(callInfo.chat_id);
             var accounts = callInfo.accounts;
-            var group_code = callInfo.group_code;//群组ID，0代表一对一对话
+            var group_code = callInfo.group_id;//群组ID，0代表一对一对话
 
             if(group_code == '0'){//一对一会话
 
@@ -3293,7 +3445,7 @@
                     delete $.ebCache.chat_win_cache[uid];
                     delete $.ebTemp.cache.calling_cache[uid];
 
-                    $.jqEBMessenger.EBCM.ebwebcm_exit(chat_id);
+                    $.jqEBMessenger.EBCM.ebwebcm.chatexit(chat_id);
                 }, 300000);
                 $.ebCache.timer_map[uid] = timer;
                 /*五分钟后退出会话*/
@@ -3301,9 +3453,7 @@
                 var click_time = $.ebCache.user_clicltime_map[uid];
 
 
-
                     if($.ebCache.user_type == "2"){
-
                         $.ebTemp.temp_handler.show_chat_win({
                             url : eb_client_config.url,
                             face: eb_client_config.default_header,
@@ -3314,8 +3464,16 @@
                         });
 
                     }else{
+                        //$.ebTemp.temp_handler.show_chat_win({
+                        //    url: "javascript:;",
+                        //    face: eb_client_config.default_header,
+                        //    title: title,
+                        //    uid: uid,
+                        //    account: accountInfo.from_account,
+                        //    call_id: callInfo.chat_id
+                        //});
 
-                        if(click_time && new Date().getTime() - click_time < 10000) {
+                        if( (uid === accountInfo.from_account) || (click_time && new Date().getTime() - click_time < 10000)) {
                             $.ebTemp.temp_handler.show_chat_win({
                                 url: "javascript:;",
                                 face: eb_client_config.default_header,
@@ -3341,7 +3499,7 @@
             }else{//群组会话
 
 
-                var group_code = callInfo.group_code;
+                var group_code = callInfo.group_id;
                 var recall_info = $.ebCache.recall_cache[group_code];
                 if(recall_info){
                     $.ebTemp.fun.push_info(group_code,"<div class='eb_info'>重新进入会话成功。</div>",function($content){
@@ -3365,7 +3523,7 @@
                     delete $.ebCache.chat_win_cache[group_code];
                     delete $.ebTemp.cache.calling_cache[group_code];
 
-                    $.jqEBMessenger.EBCM.ebwebcm_exit(group_code);
+                    $.jqEBMessenger.EBCM.ebwebcm_chatexit(group_code);
                 }, 300000);
                 $.ebCache.timer_map[group_code] = timer;
                 /*五分钟后退出会话*/
@@ -3400,7 +3558,8 @@
 
         $.ebMsg.eventHandle.onDisconnect = function(){
             window.onbeforeunload = undefined;
-            var exit_url = $.ebMsg.options.WEBIM_URL + "/client.html";
+            //var exit_url = $.ebMsg.options.WEBIM_URL + "/client.html";
+            var exit_url = window.location.href;
             setTimeout(function(){
                 window.location.href = exit_url;
             },10000);
@@ -3523,15 +3682,15 @@
 
                     var params = {
                         user_name: $("#account_table [name='username']").val(),
-                        desc:$("#account_table [name='desc']").val(),
-                        add: $("#account_table [name='add']").val(),
-                        url: $("#account_table [name='url']").val(),
+                        description:$("#account_table [name='desc']").val(),
+                        address: $("#account_table [name='add']").val(),
+                        user_url: $("#account_table [name='url']").val(),
                         gender: $("#account_table [name='gender']").val(),
                         tel: $("#account_table [name='tel']").val(),
                         mobile: $("#account_table [name='mobile']").val(),
                         email: $("#account_table [name='email']").val(),
                         birthday: $("#account_table [name='birthday']").val(),
-                        zipcode: $("#account_table [name='zipcode']").val()
+                        zip_code: $("#account_table [name='zipcode']").val()
 
                     };
 
@@ -3540,15 +3699,15 @@
                         if(code == "0"){
                             alert("个人资料修改成功!");
                             myInfo.username = params.user_name;
-                            myInfo.description = params.desc;
-                            myInfo.add = params.add;
-                            myInfo.user_url = params.url;
+                            myInfo.desc = params.description;
+                            myInfo.add = params.address;
+                            myInfo.url = params.user_url;
                             myInfo.gender = params.gender;
                             myInfo.tel = params.tel;
                             myInfo.mobile = params.mobile;
                             myInfo.email = params.email;
                             myInfo.birthday = params.birthday;
-                            myInfo.zipcode = params.zipcode;
+                            myInfo.zipcode = params.zip_code;
                         }else{
                             alert("个人资料修改失败: " + data.error);
                         }
@@ -3590,8 +3749,8 @@
                     cur_pwd = $.md5(uid + "" + cur_pwd).toLowerCase();
                     new_pwd = $.md5(uid + "" + new_pwd).toLowerCase();
                     var params = {
-                        old_pwd: cur_pwd,
-                        passwd: new_pwd
+                        old_password: cur_pwd,
+                        new_password: new_pwd
 
                     };
                     $.ebMsg.sinfo(params,function(data){
