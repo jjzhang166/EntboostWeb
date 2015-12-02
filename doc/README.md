@@ -35,6 +35,6 @@
 	浮动窗中电话号码 `"400-800-1180"`修改为用户公司的电话号码
 	
 	* 用户在自己的网站添加如下代码(实现在线客服功能)
-	 `<script type="text/javascript" src="http://ip:port/js/onlinecall.js?to_account=9009301234"></script>`，例如
-	 <script type="text/javascript" src="http://entboost.entboost.com/webim/js/onlinecall.js?to_account=9009301234"></script>	
+	`格式：<script type="text/javascript" src="http://ip或域名:port/js/onlinecall.js?to_account=9009301234"></script>`
+	`例如<script type="text/javascript" src="http://entboost.entboost.com/webim/js/onlinecall.js?to_account=9009301234"></script>`	
 	
